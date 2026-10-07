@@ -30,7 +30,7 @@ main{flex:1;display:grid;grid-template-columns:var(--sw,400px) 7px 1fr;min-heigh
 .star{color:var(--gold);letter-spacing:1px}.star .es{color:var(--mute)}
 .pin{position:absolute;left:0;top:0;transform:translate(-50%,calc(-100% - 8px));background:#0b5059;color:#fff;font:700 13px system-ui;padding:3px 9px;border-radius:99px;border:2px solid #fff;white-space:nowrap;width:max-content;box-shadow:0 0 0 1px #000a,0 2px 6px #0008;text-shadow:0 1px 1px #0007;cursor:grab}.pin::after{content:'';position:absolute;left:50%;bottom:-9px;margin-left:-6px;border:6px solid transparent;border-top-color:#fff;border-bottom:0}.dot{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;background:#0b5059;border:3px solid #fff;box-shadow:0 0 0 1.5px #000b,0 2px 6px #0009}
 .fwrap{position:relative}.fp{position:absolute;top:calc(100% + 6px);right:0;z-index:1100;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 24px #0003;padding:12px;width:min(460px,calc(100vw - 32px));max-height:70vh;overflow:auto}.fp[hidden]{display:none}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fgrid label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mute)}.fgrid select,.fgrid input{width:100%;font-size:14px;color:var(--ink)}#fq{color:#000;background:#fff;-webkit-text-fill-color:#000;caret-color:#000}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fgrid label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mute)}.fgrid select,.fgrid input{width:100%;font-size:14px;color:var(--ink)}#fq{color:#000;background:#fff;-webkit-text-fill-color:#000;caret-color:#000;-webkit-appearance:none;appearance:none;border:2px solid #6f8384;border-radius:6px}#fq:focus{border-color:var(--acc)}
 .prng{display:flex;gap:6px;align-items:center}.prng input{flex:1;min-width:0}
 .fgrid.g3{grid-template-columns:1fr 1fr 1fr}.fgrid label.wide{grid-column:1/-1}.fp h4{font:600 11px system-ui;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:14px 0 6px}.fp h5{font-weight:600;font-size:12px;margin:8px 0 3px}
 .fck{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:13px}.fck label{display:flex;gap:6px;align-items:flex-start;cursor:pointer}.fck input{margin:3px 0 0}
@@ -66,19 +66,25 @@ table.cmp{border-collapse:collapse;width:100%}.cmp td,.cmp th{border-bottom:1px 
 .rt{margin-left:auto;display:flex;gap:10px;font-size:13px;color:var(--mute);white-space:nowrap}.rt b{font-weight:400}
 .arow{padding:8px 12px;border-top:1px solid var(--line);font-size:13px}.arow div{margin-top:2px}
 @media(max-width:500px){.who{grid-template-columns:1fr}}
+.fgrid .fl{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mute)}
+.ms{position:relative}.msb{width:100%;text-align:left;font-size:14px;color:var(--ink);padding:5px 26px 5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}.msb::after{content:'\25BE';position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--mute)}.ms.open .msb{border-color:var(--acc)}
+.msp{position:absolute;left:0;top:calc(100% + 3px);z-index:5;min-width:100%;width:max-content;max-width:260px;max-height:260px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px #0003;padding:4px 0}.msp[hidden]{display:none}
+.msp label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:7px 12px;font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap}.msp label:hover{background:var(--bg)}.msp input{margin:0;width:16px;height:16px;flex:none}
+.zl{margin:0 0 8px;font-size:16.5px;font-weight:600}
+@media(prefers-color-scheme:dark){a,a:visited{color:#8fc9ff}}
 </style></head><body>
 <header><h1>House listings</h1><span id="fsum" class="mute"></span><button id="fclr2" hidden title="Clear all filters and reset the map">Clear filters ✕</button>
 <div class="fwrap"><button id="fb" aria-expanded="false" aria-controls="fp">Filters<span id="fn"></span> ▾</button>
 <div id="fp" class="fp" hidden>
 <div class="fgrid"><label class="wide">Search <input id="fq" data-flt type="search" placeholder="Any words: lake, wainscoting, tankless…"></label></div>
 <h4>Basics</h4><div class="fgrid g3">
-<label>Avg Rating <select id="fr" data-flt><option value="">All</option><option value="5">★★★★★ only</option><option value="4">4 stars and up</option><option value="3">3 stars and up</option><option value="2">2 stars and up</option><option value="1">1 star and up</option><option value="none">Unrated</option></select></label>
-<label>Rob Rating <select id="frr" data-flt data-who="rob"><option value="">All</option><option value="5">★★★★★ only</option><option value="4">4 stars and up</option><option value="3">3 stars and up</option><option value="2">2 stars and up</option><option value="1">1 star and up</option><option value="none">Unrated</option></select></label>
-<label>Hannah Rating <select id="frh" data-flt data-who="hannah"><option value="">All</option><option value="5">★★★★★ only</option><option value="4">4 stars and up</option><option value="3">3 stars and up</option><option value="2">2 stars and up</option><option value="1">1 star and up</option><option value="none">Unrated</option></select></label>
-<label>City <select id="fc" data-flt><option value="">All</option></select></label>
-<label>State <select id="fst" data-flt><option value="">All</option></select></label>
-<label style="grid-column:1">Zillow <select id="fz" data-flt><option value="">All</option></select></label>
-<label>Status <select id="fs" data-flt><option value="">All</option><option>Interested</option><option>Toured</option><option>Offer</option><option>Pass</option><option value="none">Untagged</option></select></label>
+<div class="fl">Avg Rating <div class="ms" id="fr" data-flt></div></div>
+<div class="fl">Rob Rating <div class="ms" id="frr" data-flt data-who="rob"></div></div>
+<div class="fl">Hannah Rating <div class="ms" id="frh" data-flt data-who="hannah"></div></div>
+<div class="fl">City <div class="ms" id="fc" data-flt></div></div>
+<div class="fl">State <div class="ms" id="fst" data-flt></div></div>
+<div class="fl" style="grid-column:1">Zillow <div class="ms" id="fz" data-flt></div></div>
+<div class="fl">Status <div class="ms" id="fs" data-flt></div></div>
 </div><div class="fgrid" style="margin-top:10px">
 <label class="wide">Price range <span class="prng"><input data-flt data-num="price" data-op="min" type="number" step="25000" placeholder="Min" aria-label="Min price"><span>–</span><input id="mp" data-flt data-num="price" data-op="max" type="number" step="25000" placeholder="Max" aria-label="Max price"></span></label>
 <label>Min beds <input data-flt data-num="beds" data-op="min" type="number" min="0" step="1" placeholder="Any"></label>
@@ -149,9 +155,21 @@ async function geo(){const w=$('#warn');let miss=[];
  fit();w.textContent=miss.length?'No pin for: '+miss.join('; ')+'. Open the listing and paste coordinates under "Pin override".':''}
 // list
 const city=l=>(l.address.split(',')[1]||'').trim(),stOf=l=>((l.address.split(',')[2]||'').trim().split(' ')[0]||'');
-$('#fst').innerHTML+=[...new Set(LS.map(stOf).filter(Boolean))].sort().map(c=>`<option>${esc(c)}</option>`).join('');
-$('#fz').innerHTML+='<option value="sale">For sale</option>'+[...new Set(LS.map(l=>l.zs).filter(Boolean))].sort().map(z=>`<option value="z:${esc(z)}">${esc(z)}</option>`).join('')+'<option value="saved">Still saved (any status)</option><option value="ns">No longer saved</option>';
-$('#fc').innerHTML+=[...new Set(LS.map(city).filter(Boolean))].sort().map(c=>`<option>${esc(c)}</option>`).join('');
+// multi-select checkbox dropdowns for the filter panel (ratings, city, state, Zillow, status); nothing ticked = All
+const MSO={};
+function msInit(id,opts){MSO[id]=opts;const e=$('#'+id);e.innerHTML=`<button type="button" class="msb" aria-haspopup="true" aria-expanded="false">All</button><div class="msp" hidden>${opts.map(o=>`<label><input type="checkbox" value="${esc(o[0])}">${o[2]||esc(o[1])}</label>`).join('')}</div>`;e.onchange=()=>msUpd(id)}
+const msV=id=>[...document.querySelectorAll('#'+id+' .msp input:checked')].map(i=>i.value);
+const msT=id=>{const v=msV(id);return MSO[id].filter(o=>v.includes(String(o[0]))).map(o=>o[1]).join(', ')};
+function msUpd(id){const v=msV(id);$('#'+id+' .msb').textContent=!v.length?'All':v.length<=2?msT(id):v.length+' selected'}
+function msOpen(e,o){e.classList.toggle('open',o);e.querySelector('.msp').hidden=!o;e.querySelector('.msb').setAttribute('aria-expanded',o)}
+document.addEventListener('click',e=>{const m=e.target.closest('.ms'),b=e.target.closest('.msb');document.querySelectorAll('.ms.open').forEach(x=>{if(x!==m)msOpen(x,false)});if(b)msOpen(m,!m.classList.contains('open'))});
+const rOk=(v,r)=>v.includes(r?String(Math.floor(r)):'none');
+const RO=a=>[5,4,3,2,1].map(n=>[String(n),n+(n>1?' stars':' star')+(a&&n<5?' ('+n+'–'+n+'.5)':''),`<span class="star">${'★'.repeat(n)}<span class="es">${'☆'.repeat(5-n)}</span></span>${a&&n<5?` <span class="mute">${n}–${n}.5</span>`:''}`]).concat([['none','Unrated']]);
+msInit('fr',RO(1));msInit('frr',RO(0));msInit('frh',RO(0));
+msInit('fst',[...new Set(LS.map(stOf).filter(Boolean))].sort().map(c=>[c,c]));
+msInit('fz',[['sale','For sale'],...[...new Set(LS.map(l=>l.zs).filter(Boolean))].sort().map(z=>['z:'+z,z]),['saved','Still saved (any status)'],['ns','No longer saved']]);
+msInit('fc',[...new Set(LS.map(city).filter(Boolean))].sort().map(c=>[c,c]));
+msInit('fs',[...['Interested','Toured','Offer','Pass'].map(x=>[x,x]),['none','Untagged']]);
 // features: [key, label, group]. Values per listing live in listings_data.json "feat" (true = seen, false = not seen in photos, null = unknown)
 const FEATS=[['pool','Pool','Outdoor'],['coveredPatio','Covered patio','Outdoor'],['outdoorKitchen','Outdoor kitchen / built-in grill','Outdoor'],['outdoorFireplace','Outdoor fireplace','Outdoor'],['firePit','Fire pit','Outdoor'],['balcony','Balcony / upper deck','Outdoor'],['golfCourse','Golf course lot / view','Outdoor'],['greenSpace','Backs to green space (park, trail, greenbelt)','Outdoor'],['waterfront','Waterfront / lake','Outdoor'],['fencedYard','Fenced yard','Outdoor'],['matureTrees','Mature trees','Outdoor'],['culDeSac','Cul-de-sac','Outdoor'],
  ['office','Office / study','Interior'],['gameRoom','Game or media room','Interior'],['wetBar','Wet bar','Interior'],['butlerPantry',"Butler's pantry",'Interior'],['wineStorage','Wine storage','Interior'],['island','Kitchen island','Interior'],['gasCooktop','Gas cooktop','Interior'],['doubleOven','Double ovens','Interior'],['primaryDown','Primary bedroom on main floor','Interior'],['freestandingTub','Freestanding tub','Interior'],['walkInShower','Walk-in shower','Interior'],['hardwoods','Wood floors (main areas)','Interior'],['vaulted','Vaulted or beamed ceilings','Interior']];
@@ -160,12 +178,12 @@ const featHtml=l=>{if(!l.feat)return '';const by=v=>FEATS.filter(f=>l.feat[f[0]]
  return `<h3>Features</h3><div class="chips">${y.map(t=>`<span class="chip">✓ ${t}</span>`).join('')||'<span class="mute">None recorded</span>'}</div>${n.length?`<p class="mute" style="font-size:13px;margin:4px 0"><b>Not seen in photos:</b> ${n.join(', ')}</p>`:''}${u.length?`<p class="mute" style="font-size:13px;margin:4px 0"><b>Can't tell from photos:</b> ${u.join(', ')}</p>`:''}`};
 const num=(l,k)=>{const v=k in l&&typeof l[k]=='number'?l[k]:l.n?.[k];return typeof v=='number'?v:null};
 const srch=l=>{const s=st(l.id);return [l.address,l.zs,l.ns?'no longer saved':'',l.hood,l.isd,l.note,l.garage,l.hoa,(l.analysis||'').replace(/<[^>]+>/g,' '),...FEATS.filter(f=>l.feat?.[f[0]]===true).map(f=>f[1]),s.status,s.rob.notes,s.hannah.notes,s.notes].join(' ').toLowerCase()};
-function rows(){let a=LS.slice();const f=$('#fs').value,c=$('#fc').value,q=$('#fq').value.toLowerCase().split(/\s+/).filter(Boolean);
- const zf=$('#fz').value;if(zf)a=a.filter(l=>zf=='ns'?l.ns:zf=='saved'?!l.ns:zf=='sale'?!l.zs:l.zs==zf.slice(2));
- const sv=$('#fst').value;if(sv)a=a.filter(l=>stOf(l)==sv);
- const rf=$('#fr').value;if(rf)a=a.filter(l=>rf=='none'?!avg(st(l.id)):avg(st(l.id))>=+rf);
- document.querySelectorAll('[data-who]').forEach(e=>{const v=e.value,w=e.dataset.who;if(v)a=a.filter(l=>{const r=st(l.id)[w].rating;return v=='none'?!r:r>=+v})});
- if(c)a=a.filter(l=>city(l)==c);if(f)a=a.filter(l=>f=='none'?!st(l.id).status:st(l.id).status==f);
+function rows(){let a=LS.slice();const f=msV('fs'),c=msV('fc'),q=$('#fq').value.toLowerCase().split(/\s+/).filter(Boolean);
+ const zf=msV('fz');if(zf.length)a=a.filter(l=>zf.some(v=>v=='ns'?l.ns:v=='saved'?!l.ns:v=='sale'?!l.zs:l.zs==v.slice(2)));
+ const stv=msV('fst');if(stv.length)a=a.filter(l=>stv.includes(stOf(l)));
+ const rf=msV('fr');if(rf.length)a=a.filter(l=>rOk(rf,avg(st(l.id))));
+ document.querySelectorAll('[data-who]').forEach(e=>{const v=msV(e.id),w=e.dataset.who;if(v.length)a=a.filter(l=>rOk(v,st(l.id)[w].rating))});
+ if(c.length)a=a.filter(l=>c.includes(city(l)));if(f.length)a=a.filter(l=>f.includes(st(l.id).status||'none'));
  document.querySelectorAll('[data-num]').forEach(e=>{if(e.value==='')return;const v=+e.value,op=e.dataset.op,k=e.dataset.num;a=a.filter(l=>{const x=num(l,k);return x!=null&&(op=='min'?x>=v:op=='max'?x<=v:x==v)})});
  document.querySelectorAll('[data-feat]:checked').forEach(e=>{a=a.filter(l=>l.feat?.[e.dataset.feat]===true)});
  if(q.length)a=a.filter(l=>{const t=srch(l);return q.every(w=>t.includes(w))});
@@ -175,10 +193,10 @@ function render(){const all=rows(),bb=inV()&&map.getBounds(),a=bb?all.filter(l=>
 <div class="row" style="margin-top:8px"><label class="mute"><input type="checkbox" data-c="${l.id}" ${cmp.includes(l.id)?'checked':''}> Compare</label><button class="lv${lvId==l.id?' on':''}" data-lv="${l.id}" title="Zoom the map to this lot">Lot View</button><button data-d="${l.id}">Details</button></div></div></div>`}).join(''):(bb&&all.length?'<p class="mute">No listings in the current map view. Pan or zoom out, or untick "Only show listings in map view".</p>':'<p class="mute">No listings match these filters. <button onclick="clearF()">Clear filters</button></p>');
  $('#cmpb').textContent='Compare ('+cmp.length+')';dot(a);
  const vis=new Set(all.map(l=>l.id));for(const id in mk)vis.has(id)?map.hasLayer(mk[id])||mk[id].addTo(map):map.removeLayer(mk[id]);mkSel();
- const n=[...document.querySelectorAll('[data-flt]')].filter(e=>e.type=='checkbox'?e.checked:e.value).length;$('#fn').textContent=n||'';$('#fclr2').hidden=!n;$('#fres').textContent=all.length+' of '+LS.length+' listings';fsum()}
+ const n=[...document.querySelectorAll('[data-flt]')].filter(e=>e.classList.contains('ms')?msV(e.id).length:e.type=='checkbox'?e.checked:e.value).length;$('#fn').textContent=n||'';$('#fclr2').hidden=!n;$('#fres').textContent=all.length+' of '+LS.length+' listings';fsum()}
 // text summary of applied filters, shown left of the Filters button
 function fsum(){const t=[],q=$('#fq').value.trim();if(q)t.push('"'+q+'"');
- [['#fr','Avg rating'],['#frr','Rob'],['#frh','Hannah'],['#fc','City'],['#fst','State'],['#fs','Status'],['#fz','Zillow']].forEach(([s,n])=>{const e=$(s);if(e.value)t.push(n+': '+e.selectedOptions[0].text)});
+ [['fr','Avg rating'],['frr','Rob'],['frh','Hannah'],['fc','City'],['fst','State'],['fs','Status'],['fz','Zillow']].forEach(([s,n])=>{const v=msT(s);if(v)t.push(n+': '+v)});
  const pm=$('[data-num="price"][data-op="min"]').value,px=$('#mp').value;if(pm||px)t.push(pm&&px?$$(+pm)+'–'+$$(+px):pm?'From '+$$(+pm):'Up to '+$$(+px));
  document.querySelectorAll('[data-num]:not([data-num="price"])').forEach(e=>{if(e.value)t.push(e.closest('label').firstChild.textContent.trim()+' '+e.value)});
  document.querySelectorAll('[data-feat]:checked').forEach(e=>t.push(e.parentNode.textContent.trim()));
@@ -198,7 +216,7 @@ function pick(id,scroll,nopan){selId=id;render();const c=mk[id];if(c&&!nopan)map
 function open_(id){const l=LS.find(x=>x.id==id),s=st(id),P=PH[id]||[];let i=0;openId=id;
  $('#pane').innerHTML=`<div class="row"><h2>${esc(l.address)}</h2><button id="x" style="margin-left:auto">Close</button></div><div class="price">${$$(l.price)}</div>
 <div class="hero" id="hero"></div>
-<div class="cols"><div><h3>Facts</h3><dl>${[['Beds',l.beds],['Baths',l.baths],['Living area',l.sqft.toLocaleString()+' sqft'],['Price per sqft',$$(ppsf(l))],['Lot',l.lot],['Built',l.year],['Garage',l.garage],['Neighborhood',l.hood],['School district',l.isd],['HOA',l.hoa],['Taxes',l.tax],['Days on Zillow',domNow(l)],['Initial list price',l.listP?$$(l.listP)+(l.listD?' on '+fdate(l.listD):''):''],['Last sold',l.sold||'Not in export']].map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>${featHtml(l)}<p><a href="${l.url}" target="_blank" rel="noopener">Open on Zillow</a></p>${l.note?`<p class="mute">${esc(l.note)}</p>`:''}
+<div class="cols"><div><p class="zl"><a href="${l.url}" target="_blank" rel="noopener">Open on Zillow</a></p><h3>Facts</h3><dl>${[['Beds',l.beds],['Baths',l.baths],['Living area',l.sqft.toLocaleString()+' sqft'],['Price per sqft',$$(ppsf(l))],['Lot',l.lot],['Built',l.year],['Garage',l.garage],['Neighborhood',l.hood],['School district',l.isd],['HOA',l.hoa],['Taxes',l.tax],['Days on Zillow',domNow(l)],['Initial list price',l.listP?$$(l.listP)+(l.listD?' on '+fdate(l.listD):''):''],['Last sold',l.sold||'Not in export']].map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>${featHtml(l)}${l.note?`<p class="mute">${esc(l.note)}</p>`:''}
 <h3>AI Analysis</h3><div class="an">${l.analysis}</div></div>
 <div><h3>Ratings and notes</h3><div class="who">${P2.map(p=>`<div><h4>${WHO[p]}</h4><label>Rating<select data-f="${p}.rating">${[5,4,3,2,1,0].map(n=>`<option value="${n}" ${s[p].rating==n?'selected':''}>${n?stars(n):'Unrated'}</option>`).join('')}</select></label><label>Notes<textarea data-f="${p}.notes">${esc(s[p].notes)}</textarea></label></div>`).join('')}</div>
 <h3>Shared</h3><div class="row"><label>Status <select data-f="status"><option value="">None</option>${['Interested','Toured','Offer','Pass'].map(o=>`<option ${s.status==o?'selected':''}>${o}</option>`).join('')}</select></label></div>
@@ -245,7 +263,7 @@ $('#list').onclick=e=>{const c=e.target.closest('[data-c]'),k=e.target.closest('
 $('#sort').oninput=render;
 // optional: list only the listings whose pin is inside the current map view
 const inV=()=>$('#inview').checked;{const c=$('#inview');c.checked=ld('hl.inview',0)==1;c.onchange=()=>{sv('hl.inview',c.checked?1:0);render()};map.on('moveend',()=>{if(c.checked)render()})}$('#fp').oninput=()=>{render();fit()};
-function clearF(){document.querySelectorAll('[data-flt]').forEach(e=>e.type=='checkbox'?e.checked=false:e.value='');render();fit()}
+function clearF(){document.querySelectorAll('[data-flt]').forEach(e=>e.classList.contains('ms')?(e.querySelectorAll('input').forEach(i=>i.checked=false),msUpd(e.id)):e.type=='checkbox'?e.checked=false:e.value='');render();fit()}
 const fpShow=o=>{$('#fp').hidden=!o;$('#fb').setAttribute('aria-expanded',o)};
 $('#fb').onclick=()=>fpShow($('#fp').hidden);$('#fdone').onclick=()=>fpShow(false);$('#fclr').onclick=clearF;$('#fclr2').onclick=clearF;
 document.addEventListener('click',e=>{if(!e.target.closest('.fwrap'))fpShow(false)});document.addEventListener('keydown',e=>{if(e.key=='Escape')fpShow(false)});$('#cmpb').onclick=compare;
