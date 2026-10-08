@@ -51,7 +51,7 @@ main{flex:1;display:grid;grid-template-columns:var(--sw,400px) 7px 1fr;min-heigh
 .pvph{position:relative;height:175px;background:var(--line)}.pvph img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}.pvph .hnav{width:30px;height:30px;font-size:20px}.pvph .hnav.l{left:6px}.pvph .hnav.r{right:6px}.pvph .hct{left:8px;bottom:8px;font-size:11px}
 .pvb{padding:9px 12px 12px}.pvb .price{font:600 19px system-ui,-apple-system,"Segoe UI",sans-serif}.pvb .rt{flex-direction:column;gap:0;align-items:flex-end;line-height:1.35}.cb .rt .avg{color:var(--mute);font-size:12px}.pvb .chips{margin:7px 0 2px}.pvb .chip{font-size:11px;padding:1px 7px}.pvgo{width:100%;margin-top:9px;padding:7px}
 .va{position:fixed;inset:0;z-index:1200;background:var(--bg);display:none;overflow:auto}.va.show{display:block}.vah{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--line)}.vah button{margin-left:auto}
-#vab{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:12px}#vab img{width:100%;border-radius:8px;display:block}
+#vab{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:12px}#vab img{width:100%;border-radius:8px;display:block;aspect-ratio:auto 4/3;background:var(--line)}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
 dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:8px 0}dt{color:var(--mute)}dd{margin:0}
 textarea{width:100%;min-height:70px}label.ck{display:block}
@@ -294,7 +294,7 @@ function open_(id){const l=LS.find(x=>x.id==id),s=st(id),P=PH[id]||[];let i=0;op
  $('#hero').onclick=e=>{const t=e.target;if(t.classList.contains('l'))heroPg(i-1);else if(t.classList.contains('r'))heroPg(i+1);else if(t.classList.contains('hva'))viewAll(id,0);else if(t.dataset.k)viewAll(id,+t.dataset.k)};$('#x').onclick=close_;
  document.querySelectorAll('#pane [data-f]').forEach(t=>{const k=t.dataset.f,sel=t.tagName=='SELECT';t[sel?'onchange':'oninput']=()=>{setF(id,k,k.endsWith('rating')?+t.value:t.value,!sel);if(sel)render()}});
  $('#f-ov').onchange=e=>{setF(id,'ov',e.target.value);place(l)};
- $('#ov').classList.add('show');pick(id,false)}
+ $('#ov').classList.add('show');$('#ov').scrollTop=0;pick(id,false)}
 const close_=()=>{$('#ov').classList.remove('show');openId=null};
 // map preview popup: slim version of the detail page
 function pvEl(l){const P=PH[l.id]||[],s=st(l.id),d=document.createElement('div');let i=0;d.className='pv';
@@ -307,13 +307,17 @@ function pvEl(l){const P=PH[l.id]||[],s=st(l.id),d=document.createElement('div')
  L.DomEvent.disableClickPropagation(d);return d}
 $('#ov').onclick=e=>{if(e.target.id=='ov')close_()};
 let heroFlip=null;const vaShown=()=>$('#va').classList.contains('show'),vaClose=()=>$('#va').classList.remove('show');
-function viewAll(id,k){const l=LS.find(x=>x.id==id),P=PH[id]||[];$('#vat').textContent=l.address+' · '+P.length+' photos';$('#vab').innerHTML=P.map((p,n)=>`<img src="${p}" decoding="async" loading="lazy" alt="Photo ${n+1} of ${P.length}">`).join('');$('#va').classList.add('show');$('#va').scrollTop=0;if(k)$('#vab').children[k].scrollIntoView();$('#vax').focus()}
+function viewAll(id,k){const l=LS.find(x=>x.id==id),P=PH[id]||[];$('#vat').textContent=l.address+' · '+P.length+' photos';$('#vab').innerHTML=P.map((p,n)=>`<img src="${p}" decoding="async" loading="lazy" alt="Photo ${n+1} of ${P.length}">`).join('');$('#va').classList.add('show');$('#va').scrollTop=0;$('#vax').focus({preventScroll:true});
+ // open on the tapped photo; photos above it load later and change height, so keep it in place until the user scrolls
+ if(k){const va=$('#va'),t=$('#vab').children[k],hd=$('.vah').offsetHeight;let lock=true;const go=()=>{if(lock)va.scrollTop=t.offsetTop-hd-8};go();requestAnimationFrame(go);
+  [...$('#vab').children].slice(0,k).forEach(im=>im.addEventListener('load',go,{once:true}));
+  const stop=()=>{lock=false;['wheel','touchstart','pointerdown','keydown'].forEach(ev=>va.removeEventListener(ev,stop))};['wheel','touchstart','pointerdown','keydown'].forEach(ev=>va.addEventListener(ev,stop,{passive:true}));setTimeout(stop,8000)}}
 $('#vax').onclick=vaClose;
 document.onkeydown=e=>{if(e.key=='Escape'){vaShown()?vaClose():close_();return}
  if($('#ov').classList.contains('show')&&!vaShown()&&$('#hero')&&heroFlip&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){if(e.key=='ArrowLeft')heroFlip(-1);if(e.key=='ArrowRight')heroFlip(1)}};
 function compare(){if(cmp.length<2){alert('Tick Compare on two or three listings first.');return}
  const L2=cmp.map(id=>LS.find(l=>l.id==id));const R=[['Photo',l=>`<img src="${cov(l.id)}" style="width:100%;border-radius:6px" alt="">`],['Address',l=>esc(l.address)],['Price',l=>$$(l.price)],['Beds / baths',l=>esc(l.beds)+' / '+esc(l.baths)],['Living area',l=>l.sqft.toLocaleString()+' sqft'],['Price per sqft',l=>$$(ppsf(l))],['Lot',l=>esc(l.lot)],['Built',l=>l.year],['HOA',l=>esc(l.hoa)],['Taxes',l=>esc(l.tax)],['Status',l=>st(l.id).status||'None'],...P2.map(p=>[WHO[p]+' rating',l=>st(l.id)[p].rating?stars(st(l.id)[p].rating):'Unrated']),['Features',l=>FEATS.filter(f=>l.feat?.[f[0]]===true).map(f=>esc(f[1])).join(', ')||'None recorded'],['Shared notes',l=>esc(st(l.id).notes)],...P2.map(p=>[WHO[p]+' notes',l=>esc(st(l.id)[p].notes)])];
- $('#pane').innerHTML=`<div class="row"><h2>Compare</h2><button id="x" style="margin-left:auto">Close</button></div><table class="cmp">${R.map(r=>`<tr><th>${r[0]}</th>${L2.map(l=>`<td>${r[1](l)}</td>`).join('')}</tr>`).join('')}</table>`;$('#x').onclick=close_;$('#ov').classList.add('show')}
+ $('#pane').innerHTML=`<div class="row"><h2>Compare</h2><button id="x" style="margin-left:auto">Close</button></div><table class="cmp">${R.map(r=>`<tr><th>${r[0]}</th>${L2.map(l=>`<td>${r[1](l)}</td>`).join('')}</tr>`).join('')}</table>`;$('#x').onclick=close_;$('#ov').classList.add('show');$('#ov').scrollTop=0}
 map.on('click',unpick);
 document.addEventListener('click',e=>{const t=e.target;if(t.closest('.card,.leaflet-container,#ov,.fp,#pcard,#lmt,button,input,select,textarea,label,a,summary,details,[role=separator]'))return;unpick()});
 $('#list').onclick=e=>{const c=e.target.closest('[data-c]'),k=e.target.closest('.card');
