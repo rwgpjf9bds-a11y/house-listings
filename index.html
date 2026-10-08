@@ -77,6 +77,27 @@ details.pxh{margin:12px 0;border:1px solid var(--line);border-radius:var(--r);ba
 .pxw{position:relative;padding:0 10px 10px}.pxw svg{width:100%;height:auto;display:block;overflow:visible;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
 .pxt{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;line-height:1.35;padding:5px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,calc(-100% - 10px));box-shadow:0 2px 8px #0004;z-index:3}.pxt[hidden]{display:none}
 .pxs{font-size:14px;margin:6px 0 0}.pxk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11px;color:var(--mute);margin-top:4px}.pxk i{display:inline-block;box-sizing:border-box;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+/* PHONE LAYOUT (added Oct 8, 2026): only on phone-size screens (narrow portrait, or short landscape); iPads and the PC are unaffected */
+#lmt,.hbr,#pcard{display:none}
+@media (max-width:600px),(max-height:500px) and (max-width:1000px){
+header{gap:6px 8px;padding:8px 12px}header h1{font-size:19px;flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#fsum{display:none}#sywrap{order:1}.hbr{display:block;order:1;flex-basis:100%;height:0}header>.fwrap:not(#sywrap){order:2}#fclr2{order:3}#cmpb{order:4}
+@media (min-width:601px){.hbr{display:none}header{flex-wrap:nowrap}header h1{flex:0 1 auto}#sywrap{margin-left:auto}}
+header button{font-size:14px;padding:5px 10px}#syb{font-size:13px}
+#fp{position:fixed;inset:0;width:auto;max-width:none;max-height:none;border:0;border-radius:0;z-index:1500;padding:14px 16px 0}
+#fp .fgrid.g3{grid-template-columns:1fr 1fr}
+#fp .fpf{position:sticky;bottom:0;z-index:6;background:var(--card);margin:12px -16px 0;padding:10px 16px calc(10px + env(safe-area-inset-bottom))}#fp .fpf button{padding:8px 16px}
+#syp{position:fixed;top:56px;left:8px;right:8px;width:auto}
+main{grid-template-columns:1fr!important;grid-template-rows:minmax(0,1fr)!important}#split{display:none}
+#side,#map{grid-area:1/1;min-height:0}#side{padding-bottom:84px}
+body:not(.pv-map) #map{visibility:hidden}body.pv-map #side{visibility:hidden}
+#lmt{display:flex;position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:900;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:3px;box-shadow:0 4px 14px #0004}
+#lmt button{border:0;border-radius:99px;padding:8px 24px;font-weight:600;background:none}#lmt button.on{background:var(--acc);color:#fff}
+#pcard:not([hidden]){display:block;position:fixed;left:10px;right:10px;max-width:420px;margin:0 auto;bottom:calc(68px + env(safe-area-inset-bottom));z-index:950;background:var(--card);color:var(--ink);border-radius:var(--r);box-shadow:0 6px 24px #0006;overflow:hidden}
+#pcard .pvph{height:150px}#pcard .pcx{position:absolute;top:6px;right:6px;z-index:2;width:30px;height:30px;padding:0;border:0;border-radius:50%;background:#000a;color:#fff;font-size:18px;line-height:30px}
+#map .leaflet-control-attribution{font-size:9px;max-width:100%;margin-bottom:calc(64px + env(safe-area-inset-bottom))}
+table.cmp{display:block;overflow-x:auto}.cmp th{width:auto;min-width:84px}.cmp td{min-width:160px}
+}
 </style></head><body>
 <header><h1>House listings</h1><span id="fsum" class="mute"></span><button id="fclr2" hidden title="Clear all filters and reset the map">Clear filters ✕</button>
 <div class="fwrap"><button id="fb" aria-expanded="false" aria-controls="fp">Filters<span id="fn"></span> ▾</button>
@@ -98,9 +119,10 @@ details.pxh{margin:12px 0;border:1px solid var(--line);border-radius:var(--r);ba
 <label>Min lot (acres) <input data-flt data-num="lotAc" data-op="min" type="number" min="0" step="0.25" placeholder="Any"></label>
 <label>Built in or after <input data-flt data-num="year" data-op="min" type="number" step="1" placeholder="Any"></label>
 </div><h4>Must have</h4><div id="ffeat"></div><div class="row fpf"><button id="fclr">Clear filters</button><span class="mute" id="fres"></span><button id="fdone" style="margin-left:auto">Done</button></div></div></div>
-<button id="cmpb">Compare (0)</button><div class="fwrap" id="sywrap"><button id="syb" class="sy" aria-expanded="false" aria-controls="syp">Sync</button><div id="syp" class="fp" hidden></div></div></header>
+<button id="cmpb">Compare (0)</button><div class="fwrap" id="sywrap"><button id="syb" class="sy" aria-expanded="false" aria-controls="syp">Sync</button><div id="syp" class="fp" hidden></div></div><i class="hbr"></i></header>
 <main><div id="side"><p id="warn"></p><details id="charts" class="tray"><summary>Charts</summary><svg id="dp" viewBox="0 0 400 150" role="img" aria-label="Price versus size"></svg></details>
 <div class="lbar"><label class="inv"><input type="checkbox" id="inview"> Only show listings in map view</label><label>Sort <select id="sort"><option value="price:asc">Price: low to high</option><option value="price:desc">Price: high to low</option><option value="ppsf:asc">$/sqft: low to high</option><option value="ppsf:desc">$/sqft: high to low</option><option value="sqft:asc">Size: low to high</option><option value="sqft:desc">Size: high to low</option><option value="lot:asc">Lot size: low to high</option><option value="lot:desc">Lot size: high to low</option><option value="rating:asc">Rating (avg): low to high</option><option value="rating:desc">Rating (avg): high to low</option></select></label></div><div id="list"></div><details id="arch" class="tray" hidden><summary></summary><div id="archl"></div></details></div><div id="split" role="separator" aria-orientation="vertical" aria-label="Resize list and map" tabindex="0"></div><div id="map"></div></main>
+<div id="lmt" role="group" aria-label="Show list or map"><button type="button" data-v="list">List</button><button type="button" data-v="map">Map</button></div><div id="pcard" hidden></div>
 <div class="ov" id="ov"><div class="pane" id="pane"></div></div>
 <div class="va" id="va" role="dialog" aria-modal="true" aria-label="All photos"><div class="vah"><b id="vat"></b><button id="vax">Close</button></div><div id="vab"></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -110,6 +132,8 @@ const LS=[{"id":"116090651","address":"13672 Crianza Rd, Frisco, TX 75035","pric
 const cov=id=>COV[id]||(PH[id]||[''])[0];
 const OFF='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#d3dbd6"/><text x="200" y="155" font-family="sans-serif" font-size="16" fill="#5b6b6c" text-anchor="middle">Photo loads when online</text></svg>');
 addEventListener('error',e=>{const t=e.target;if(t.tagName=='IMG'&&t.src.startsWith('https://photos.zillowstatic.com')&&!t.dataset.off){t.dataset.off=1;t.src=OFF}},true);
+// PHONE LAYOUT: true on phone-size screens (same rule as the CSS block)
+const PHQ=matchMedia('(max-width:600px), (max-height:500px) and (max-width:1000px)'),isPhone=()=>PHQ.matches;
 const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let S=ld('hl.state2',{}),G=ld('hl.geo',{}),cmp=[],selId=null,openId=null,lvId=null,lvPrev=null;
 // per-person fields live under s.rob / s.hannah; status, shared notes and the pin are shared (pros/cons are the old shared fields, folded into notes)
@@ -215,7 +239,7 @@ function dot(a){const svg=$('#dp');if(!a.length){svg.innerHTML='';return}
  svg.innerHTML=`<text x="6" y="12" font-size="10" fill="var(--mute)">Price vs. size (filtered)</text><line x1="40" y1="120" x2="380" y2="120" stroke="var(--line)"/><text x="40" y="143" font-size="10" fill="var(--mute)">${Math.round(x0)} sqft</text><text x="380" y="143" font-size="10" text-anchor="end" fill="var(--mute)">${Math.round(x1)} sqft</text>`+
  a.map(l=>`<circle cx="${X(l.sqft)}" cy="${Y(l.price)}" r="${l.id==selId?7:5}" fill="var(--acc)"><title>${esc(l.address)} ${$$(l.price)}</title></circle><text x="${X(l.sqft)+9}" y="${Y(l.price)+4}" font-size="10" fill="var(--ink)">${short(l.price)}</text>`).join('')}
 function mkSel(){for(const id in mk){const on=id==selId,e=mk[id].getElement();e&&e.classList.toggle('hsel',on);mk[id].setZIndexOffset(on?1000:0)}}
-function lotV(id){const m=mk[id];if(lvId==id){lvId=null;if(lvPrev)map.setView(lvPrev.c,lvPrev.z);lvPrev=null;pick(id,false,true);return}
+function lotV(id){const m=mk[id];if(isPhone()&&lvId!=id&&m)pvSet('map');if(lvId==id){lvId=null;if(lvPrev)map.setView(lvPrev.c,lvPrev.z);lvPrev=null;pick(id,false,true);return}
  if(!m)return;if(lvId==null)lvPrev={c:map.getCenter(),z:map.getZoom()};lvId=id;pick(id,false,true);map.setView(m.getLatLng(),map.getMaxZoom()||19)}
 function unpick(){if(selId==null)return;selId=null;render()}
 function pick(id,scroll,nopan){selId=id;render();const c=mk[id];if(c&&!nopan)map.panTo(c.getLatLng());if(scroll){const e=document.querySelector(`.card[data-id="${id}"]`);e&&e.scrollIntoView({block:'nearest'})}}
@@ -284,7 +308,7 @@ function compare(){if(cmp.length<2){alert('Tick Compare on two or three listings
  const L2=cmp.map(id=>LS.find(l=>l.id==id));const R=[['Photo',l=>`<img src="${cov(l.id)}" style="width:100%;border-radius:6px" alt="">`],['Address',l=>esc(l.address)],['Price',l=>$$(l.price)],['Beds / baths',l=>esc(l.beds)+' / '+esc(l.baths)],['Living area',l=>l.sqft.toLocaleString()+' sqft'],['Price per sqft',l=>$$(ppsf(l))],['Lot',l=>esc(l.lot)],['Built',l=>l.year],['HOA',l=>esc(l.hoa)],['Taxes',l=>esc(l.tax)],['Status',l=>st(l.id).status||'None'],...P2.map(p=>[WHO[p]+' rating',l=>st(l.id)[p].rating?stars(st(l.id)[p].rating):'Unrated']),['Features',l=>FEATS.filter(f=>l.feat?.[f[0]]===true).map(f=>esc(f[1])).join(', ')||'None recorded'],['Shared notes',l=>esc(st(l.id).notes)],...P2.map(p=>[WHO[p]+' notes',l=>esc(st(l.id)[p].notes)])];
  $('#pane').innerHTML=`<div class="row"><h2>Compare</h2><button id="x" style="margin-left:auto">Close</button></div><table class="cmp">${R.map(r=>`<tr><th>${r[0]}</th>${L2.map(l=>`<td>${r[1](l)}</td>`).join('')}</tr>`).join('')}</table>`;$('#x').onclick=close_;$('#ov').classList.add('show')}
 map.on('click',unpick);
-document.addEventListener('click',e=>{const t=e.target;if(t.closest('.card,.leaflet-container,#ov,.fp,button,input,select,textarea,label,a,summary,details,[role=separator]'))return;unpick()});
+document.addEventListener('click',e=>{const t=e.target;if(t.closest('.card,.leaflet-container,#ov,.fp,#pcard,#lmt,button,input,select,textarea,label,a,summary,details,[role=separator]'))return;unpick()});
 $('#list').onclick=e=>{const c=e.target.closest('[data-c]'),k=e.target.closest('.card');
  if(c){const id=c.dataset.c;cmp=c.checked?[...new Set([...cmp,id])].slice(-3):cmp.filter(x=>x!=id);render()}else if(e.target.closest('[data-lv]'))lotV(e.target.closest('[data-lv]').dataset.lv);else if(e.target.closest('[data-d]'))open_(e.target.closest('[data-d]').dataset.d);else if(e.target.closest('label,button'))return;else if(k)pick(k.dataset.id)};
 // resizable list/map divider
@@ -378,5 +402,13 @@ function syncInit(){const b=$('#syb'),p=$('#syp'),show=o=>{p.hidden=!o;b.setAttr
  setInterval(()=>{if(!document.hidden&&!fails)pull()},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull()});
  syncUI();if(PID)pull();else if(ld('hl.state',null)&&!ld('hl.migrated',0))show(true)}
 
+// PHONE LAYOUT: List / Map switch (remembered per device) and a bottom card instead of the map popup
+function pvSet(v){document.body.classList.toggle('pv-map',v=='map');document.querySelectorAll('#lmt button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));sv('hl.pv',v);if(v!='map')pcHide();setTimeout(()=>map.invalidateSize(),0)}
+const pcHide=()=>{$('#pcard').hidden=true;$('#pcard').innerHTML=''};
+$('#lmt').onclick=e=>{const b=e.target.closest('button');if(b)pvSet(b.dataset.v)};pvSet(ld('hl.pv','list')=='map'?'map':'list');
+map.on('popupopen',e=>{if(!isPhone())return;const id=Object.keys(mk).find(k=>mk[k]===e.popup._source),l=LS.find(x=>x.id==id);map.closePopup();if(!l)return;
+ const c=$('#pcard');c.innerHTML='<button type="button" class="pcx" aria-label="Close">×</button>';c.append(pvEl(l));c.hidden=false});
+$('#pcard').addEventListener('click',e=>{if(e.target.closest('.pcx,.pvgo'))setTimeout(pcHide,0)},true);map.on('click',pcHide);
+PHQ.addEventListener?.('change',()=>{pcHide();setTimeout(()=>map.invalidateSize(),50)});
 render();geo();syncInit();
 </script></body></html>
