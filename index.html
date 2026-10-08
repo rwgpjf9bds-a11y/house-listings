@@ -150,9 +150,9 @@ const stars=n=>'★'.repeat(n)+'☆'.repeat(5-n);
 const avgH=s=>{const v=avg(s);if(!v)return '';return `<span class="avg">Avg ${v.toFixed(1)}</span>`};
 const rtgA=s=>rtg(s).replace(/<\/span>$/,avgH(s)+'</span>');
 // map
-const map=L.map('map').setView([33.28,-96.77],11);
+const map=L.map('map',{maxZoom:21}).setView([33.28,-96.77],11);
 const E='https://server.arcgisonline.com/ArcGIS/rest/services/',at='Tiles &copy; Esri, HERE, Garmin, OpenStreetMap contributors';
-const base={Street:L.tileLayer(E+'World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:at}),'Satellite + labels':L.layerGroup([L.tileLayer(E+'World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,zIndex:1,attribution:'Tiles &copy; Esri, Maxar, Earthstar Geographics'}),L.tileLayer(E+'Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,zIndex:2}),L.tileLayer(E+'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,zIndex:3})]),Satellite:L.tileLayer(E+'World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles &copy; Esri, Maxar, Earthstar Geographics'}),Topo:L.tileLayer(E+'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:at})};
+const base={Street:L.tileLayer(E+'World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:21,maxNativeZoom:19,attribution:at}),'Satellite + labels':L.layerGroup([L.tileLayer(E+'World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:21,maxNativeZoom:19,zIndex:1,attribution:'Tiles &copy; Esri, Maxar, Earthstar Geographics'}),L.tileLayer(E+'Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',{maxZoom:21,maxNativeZoom:19,zIndex:2}),L.tileLayer(E+'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:21,maxNativeZoom:19,zIndex:3})]),Satellite:L.tileLayer(E+'World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:21,maxNativeZoom:19,attribution:'Tiles &copy; Esri, Maxar, Earthstar Geographics'}),Topo:L.tileLayer(E+'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:21,maxNativeZoom:19,attribution:at})};
 let terr=0;Object.values(base).forEach(l=>l.on('tileerror',()=>{if(++terr==6)$('#warn').textContent='Map tiles are not loading. Check your connection or try another layer (top right of the map).'}));
 const radios=(n,opts,cur)=>opts.map(o=>`<label><input type="radio" name="${n}" value="${o[0]}" ${cur==o[0]?'checked':''}>${o[1]}</label>`).join('');
 function tile(title,key,body,onchg){const C=L.control({position:'topright'});C.onAdd=()=>{let col=ld(key,'closed')!='open';const d=L.DomUtil.create('div','lblctl'+(col?' col':''));d.innerHTML=`<button type="button" class="lh" aria-expanded="${!col}">${title}<span>▼</span></button><div class="lb">${body}</div>`;
@@ -246,7 +246,7 @@ function dot(a){const svg=$('#dp');if(!a.length){svg.innerHTML='';return}
  a.map(l=>`<circle cx="${X(l.sqft)}" cy="${Y(l.price)}" r="${l.id==selId?7:5}" fill="var(--acc)"><title>${esc(l.address)} ${$$(l.price)}</title></circle><text x="${X(l.sqft)+9}" y="${Y(l.price)+4}" font-size="10" fill="var(--ink)">${short(l.price)}</text>`).join('')}
 function mkSel(){for(const id in mk){const on=id==selId,e=mk[id].getElement();e&&e.classList.toggle('hsel',on);mk[id].setZIndexOffset(on?1000:0)}}
 function lotV(id){const m=mk[id];if(isPhone()&&lvId!=id&&m)pvSet('map');if(lvId==id){lvId=null;if(lvPrev)map.setView(lvPrev.c,lvPrev.z);lvPrev=null;pick(id,false,true);return}
- if(!m)return;if(lvId==null)lvPrev={c:map.getCenter(),z:map.getZoom()};lvId=id;pick(id,false,true);map.setView(m.getLatLng(),map.getMaxZoom()||19)}
+ if(!m)return;if(lvId==null)lvPrev={c:map.getCenter(),z:map.getZoom()};lvId=id;pick(id,false,true);map.setView(m.getLatLng(),19)}
 function unpick(){if(selId==null)return;selId=null;render()}
 function pick(id,scroll,nopan){selId=id;render();const c=mk[id];if(c&&!nopan)map.panTo(c.getLatLng());if(scroll){const e=document.querySelector(`.card[data-id="${id}"]`);e&&e.scrollIntoView({block:'nearest'})}}
 // PRICE CHART (added Oct 7, 2026): listing price history (l.phist = [[date, event, price]] built by build.py), line + dot chart in an expander
