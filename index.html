@@ -69,7 +69,7 @@ table.cmp{border-collapse:collapse;width:100%}.cmp td,.cmp th{border-bottom:1px 
 .fgrid .fl{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mute)}
 .ms{position:relative}.msb{width:100%;text-align:left;font-size:14px;color:var(--ink);padding:5px 26px 5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}.msb::after{content:'\25BE';position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--mute)}.ms.open .msb{border-color:var(--acc)}
 .msp{position:absolute;left:0;top:calc(100% + 3px);z-index:5;min-width:100%;width:max-content;max-width:260px;max-height:260px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px #0003;padding:4px 0}.msp[hidden]{display:none}
-.msp label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:7px 12px;font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap}.msp label:hover{background:var(--bg)}.msp input{margin:0;width:16px;height:16px;flex:none}
+.msp label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:7px 12px;font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap}.msp label:hover{background:var(--bg)}.msp input{margin:0;width:16px;height:16px;flex:none}.msp label[hidden]{display:none}.msp .cnt{color:var(--mute);margin-left:-4px}.fck label.off{opacity:.4;cursor:default}
 .zl{margin:0 0 8px;font-size:16.5px;font-weight:600}
 @media(prefers-color-scheme:dark){a,a:visited{color:#8fc9ff}}
 /* PRICE CHART (added Oct 7, 2026) */
@@ -86,7 +86,7 @@ header{gap:6px 8px;padding:8px 12px}header h1{font-size:19px;flex:1 1 0;min-widt
 header button{font-size:14px;padding:5px 10px}#syb{font-size:13px}
 #fp{position:fixed;inset:0;width:auto;max-width:none;max-height:none;border:0;border-radius:0;z-index:1500;padding:14px 16px 0}
 #fp .fgrid.g3{grid-template-columns:1fr 1fr}
-#fp .fpf{position:sticky;bottom:0;z-index:6;background:var(--card);margin:12px -16px 0;padding:10px 16px calc(10px + env(safe-area-inset-bottom))}#fp .fpf button{padding:8px 16px}
+#fp:not([hidden]){display:flex;flex-direction:column}#fp>*{flex:none}#fp .fpf{order:-1;position:sticky;top:0;z-index:6;background:var(--card);margin:0 -16px 10px;padding:10px 16px;border-top:0;border-bottom:1px solid var(--line)}#fp{padding-top:0;padding-bottom:calc(16px + env(safe-area-inset-bottom))}#fp .fpf button{padding:8px 16px}
 #syp{position:fixed;top:56px;left:8px;right:8px;width:auto}
 main{grid-template-columns:1fr!important;grid-template-rows:minmax(0,1fr)!important}#split{display:none}
 #side,#map{grid-area:1/1;min-height:0}#side{padding-bottom:84px}
@@ -186,7 +186,7 @@ async function geo(){const w=$('#warn');let miss=[];
 const city=l=>(l.address.split(',')[1]||'').trim(),stOf=l=>((l.address.split(',')[2]||'').trim().split(' ')[0]||'');
 // multi-select checkbox dropdowns for the filter panel (ratings, city, state, Zillow, status); nothing ticked = All
 const MSO={};
-function msInit(id,opts){MSO[id]=opts;const e=$('#'+id);e.innerHTML=`<button type="button" class="msb" aria-haspopup="true" aria-expanded="false">All</button><div class="msp" hidden>${opts.map(o=>`<label><input type="checkbox" value="${esc(o[0])}">${o[2]||esc(o[1])}</label>`).join('')}</div>`;e.onchange=()=>msUpd(id)}
+function msInit(id,opts){MSO[id]=opts;const e=$('#'+id);e.innerHTML=`<button type="button" class="msb" aria-haspopup="true" aria-expanded="false">All</button><div class="msp" hidden>${opts.map(o=>`<label><input type="checkbox" value="${esc(o[0])}">${o[2]||esc(o[1])}<span class="cnt"></span></label>`).join('')}</div>`;e.onchange=()=>msUpd(id)}
 const msV=id=>[...document.querySelectorAll('#'+id+' .msp input:checked')].map(i=>i.value);
 const msT=id=>{const v=msV(id);return MSO[id].filter(o=>v.includes(String(o[0]))).map(o=>o[1]).join(', ')};
 function msUpd(id){const v=msV(id);$('#'+id+' .msb').textContent=!v.length?'All':v.length<=2?msT(id):v.length+' selected'}
@@ -207,15 +207,21 @@ const featHtml=l=>{if(!l.feat)return '';const by=v=>FEATS.filter(f=>l.feat[f[0]]
  return `<h3>Features</h3><div class="chips">${y.map(t=>`<span class="chip">✓ ${t}</span>`).join('')||'<span class="mute">None recorded</span>'}</div>${n.length?`<p class="mute" style="font-size:13px;margin:4px 0"><b>Not seen in photos:</b> ${n.join(', ')}</p>`:''}${u.length?`<p class="mute" style="font-size:13px;margin:4px 0"><b>Can't tell from photos:</b> ${u.join(', ')}</p>`:''}`};
 const num=(l,k)=>{const v=k in l&&typeof l[k]=='number'?l[k]:l.n?.[k];return typeof v=='number'?v:null};
 const srch=l=>{const s=st(l.id);return [l.address,l.zs,l.ns?'no longer saved':'',l.hood,l.isd,l.note,l.garage,l.hoa,(l.analysis||'').replace(/<[^>]+>/g,' '),...FEATS.filter(f=>l.feat?.[f[0]]===true).map(f=>f[1]),s.status,s.rob.notes,s.hannah.notes,s.notes].join(' ').toLowerCase()};
-function rows(){let a=LS.slice();const f=msV('fs'),c=msV('fc'),q=$('#fq').value.toLowerCase().split(/\s+/).filter(Boolean);
- const zf=msV('fz');if(zf.length)a=a.filter(l=>zf.some(v=>v=='ns'?l.ns:v=='saved'?!l.ns:v=='sale'?!l.zs:l.zs==v.slice(2)));
- const stv=msV('fst');if(stv.length)a=a.filter(l=>stv.includes(stOf(l)));
- const rf=msV('fr');if(rf.length)a=a.filter(l=>rOk(rf,avg(st(l.id))));
- document.querySelectorAll('[data-who]').forEach(e=>{const v=msV(e.id),w=e.dataset.who;if(v.length)a=a.filter(l=>rOk(v,st(l.id)[w].rating))});
- if(c.length)a=a.filter(l=>c.includes(city(l)));if(f.length)a=a.filter(l=>f.includes(st(l.id).status||'none'));
- document.querySelectorAll('[data-num]').forEach(e=>{if(e.value==='')return;const v=+e.value,op=e.dataset.op,k=e.dataset.num;a=a.filter(l=>{const x=num(l,k);return x!=null&&(op=='min'?x>=v:op=='max'?x<=v:x==v)})});
- document.querySelectorAll('[data-feat]:checked').forEach(e=>{a=a.filter(l=>l.feat?.[e.dataset.feat]===true)});
- if(q.length)a=a.filter(l=>{const t=srch(l);return q.every(w=>t.includes(w))});
+// FACETED FILTERS (added Oct 8, 2026): one test per listing, so each dropdown can count "all other filters except me"
+const MSM={fs:(l,v)=>(st(l.id).status||'none')==v,fc:(l,v)=>city(l)==v,fst:(l,v)=>stOf(l)==v,
+ fz:(l,v)=>v=='ns'?!!l.ns:v=='saved'?!l.ns:v=='sale'?!l.zs:l.zs==v.slice(2),
+ fr:(l,v)=>rOk([v],avg(st(l.id))),frr:(l,v)=>rOk([v],st(l.id).rob.rating),frh:(l,v)=>rOk([v],st(l.id).hannah.rating)};
+function fx(){return {q:$('#fq').value.toLowerCase().split(/\s+/).filter(Boolean),ms:Object.fromEntries(Object.keys(MSM).map(id=>[id,msV(id)])),
+ nums:[...document.querySelectorAll('[data-num]')].filter(e=>e.value!=='').map(e=>[e.dataset.num,e.dataset.op,+e.value]),feats:[...document.querySelectorAll('[data-feat]:checked')].map(e=>e.dataset.feat)}}
+function pass(l,X,skip){for(const id in X.ms){const v=X.ms[id];if(id!=skip&&v.length&&!v.some(x=>MSM[id](l,x)))return false}
+ for(const [k,op,v] of X.nums){const x=num(l,k);if(!(x!=null&&(op=='min'?x>=v:op=='max'?x<=v:x==v)))return false}
+ for(const f of X.feats)if(f!=skip&&l.feat?.[f]!==true)return false;
+ if(X.q.length){const t=srch(l);if(!X.q.every(w=>t.includes(w)))return false}return true}
+// dropdown options: count of listings matching all OTHER filters; options with none are hidden (unless ticked). Feature boxes with no matches are greyed out.
+function facets(){const X=fx();
+ for(const id in MSM){const base=LS.filter(l=>pass(l,X,id));document.querySelectorAll('#'+id+' .msp label').forEach(lb=>{const i=lb.querySelector('input'),n=base.filter(l=>MSM[id](l,i.value)).length;lb.hidden=!n&&!i.checked;lb.querySelector('.cnt').textContent=' ('+n+')'})}
+ const cur=LS.filter(l=>pass(l,X));document.querySelectorAll('[data-feat]').forEach(e=>{const off=!e.checked&&!cur.some(l=>l.feat?.[e.dataset.feat]===true);e.disabled=off;e.parentNode.classList.toggle('off',off)})}
+function rows(){const X=fx();let a=LS.filter(l=>pass(l,X));
  // sort: field:asc|desc; listings with no value (no lot size, unrated) always go last; ties by price
  const [sk,sd]=$('#sort').value.split(':'),sv_=l=>{const v=sk=='price'?l.price:sk=='ppsf'?ppsf(l):sk=='sqft'?l.sqft:sk=='lot'?num(l,'lotAc'):avg(st(l.id));return v||v===0&&sk!='rating'&&sk!='lot'?v:null};
  a.sort((x,y)=>{const u=sv_(x),w=sv_(y);if(u==null||w==null)return u==null&&w==null?x.price-y.price:u==null?1:-1;return (sd=='asc'?u-w:w-u)||x.price-y.price});return a}
@@ -224,7 +230,7 @@ function render(){const all=rows(),bb=inV()&&map.getBounds(),a=bb?all.filter(l=>
 <div class="row" style="margin-top:8px"><label class="mute"><input type="checkbox" data-c="${l.id}" ${cmp.includes(l.id)?'checked':''}> Compare</label><button class="lv${lvId==l.id?' on':''}" data-lv="${l.id}" title="Zoom the map to this lot">Lot View</button><button data-d="${l.id}">Details</button></div></div></div>`}).join(''):(bb&&all.length?'<p class="mute">No listings in the current map view. Pan or zoom out, or untick "Only show listings in map view".</p>':'<p class="mute">No listings match these filters. <button onclick="clearF()">Clear filters</button></p>');
  $('#cmpb').textContent='Compare ('+cmp.length+')';dot(a);
  const vis=new Set(all.map(l=>l.id));for(const id in mk)vis.has(id)?map.hasLayer(mk[id])||mk[id].addTo(map):map.removeLayer(mk[id]);mkSel();
- const n=[...document.querySelectorAll('[data-flt]')].filter(e=>e.classList.contains('ms')?msV(e.id).length:e.type=='checkbox'?e.checked:e.value).length;$('#fn').textContent=n||'';$('#fclr2').hidden=!n;$('#fres').textContent=all.length+' of '+LS.length+' listings';fsum()}
+ const n=[...document.querySelectorAll('[data-flt]')].filter(e=>e.classList.contains('ms')?msV(e.id).length:e.type=='checkbox'?e.checked:e.value).length;$('#fn').textContent=n||'';$('#fclr2').hidden=!n;$('#fres').textContent=all.length+' of '+LS.length+' listings';fsum();facets()}
 // text summary of applied filters, shown left of the Filters button
 function fsum(){const t=[],q=$('#fq').value.trim();if(q)t.push('"'+q+'"');
  [['fr','Avg rating'],['frr','Rob'],['frh','Hannah'],['fc','City'],['fst','State'],['fs','Status'],['fz','Zillow']].forEach(([s,n])=>{const v=msT(s);if(v)t.push(n+': '+v)});
