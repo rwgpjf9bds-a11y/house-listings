@@ -196,7 +196,7 @@ const rOk=(v,r)=>v.includes(r?String(Math.floor(r)):'none');
 const RO=a=>[5,4,3,2,1].map(n=>[String(n),n+(n>1?' stars':' star')+(a&&n<5?' ('+n+'–'+n+'.5)':''),`<span class="star">${'★'.repeat(n)}<span class="es">${'☆'.repeat(5-n)}</span></span>${a&&n<5?` <span class="mute">${n}–${n}.5</span>`:''}`]).concat([['none','Unrated']]);
 msInit('fr',RO(1));msInit('frr',RO(0));msInit('frh',RO(0));
 msInit('fst',[...new Set(LS.map(stOf).filter(Boolean))].sort().map(c=>[c,c]));
-msInit('fz',[['sale','For sale'],...[...new Set(LS.map(l=>l.zs).filter(Boolean))].sort().map(z=>['z:'+z,z]),['saved','Still saved (any status)']]);
+msInit('fz',[['sale','For sale'],...[...new Set(LS.map(l=>l.zs).filter(Boolean))].sort().map(z=>['z:'+z,z])]);
 msInit('fc',[...new Set(LS.map(city).filter(Boolean))].sort().map(c=>[c,c]));
 msInit('fs',[...['Interested','Toured','Offer','Pass'].map(x=>[x,x]),['none','Untagged']]);
 // features: [key, label, group]. Values per listing live in listings_data.json "feat" (true = seen, false = not seen in photos, null = unknown)
