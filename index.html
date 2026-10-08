@@ -196,7 +196,7 @@ const rOk=(v,r)=>v.includes(r?String(Math.floor(r)):'none');
 const RO=a=>[5,4,3,2,1].map(n=>[String(n),n+(n>1?' stars':' star')+(a&&n<5?' ('+n+'–'+n+'.5)':''),`<span class="star">${'★'.repeat(n)}<span class="es">${'☆'.repeat(5-n)}</span></span>${a&&n<5?` <span class="mute">${n}–${n}.5</span>`:''}`]).concat([['none','Unrated']]);
 msInit('fr',RO(1));msInit('frr',RO(0));msInit('frh',RO(0));
 msInit('fst',[...new Set(LS.map(stOf).filter(Boolean))].sort().map(c=>[c,c]));
-msInit('fz',[['sale','For sale'],...[...new Set(LS.map(l=>l.zs).filter(Boolean))].sort().map(z=>['z:'+z,z])]);
+msInit('fz',[['sale','For sale'],...[...new Set(LS.map(l=>l.zs).filter(Boolean))].sort().map(z=>['z:'+z,z]),['ns','No longer saved']]);
 msInit('fc',[...new Set(LS.map(city).filter(Boolean))].sort().map(c=>[c,c]));
 msInit('fs',[...['Interested','Toured','Offer','Pass'].map(x=>[x,x]),['none','Untagged']]);
 // features: [key, label, group]. Values per listing live in listings_data.json "feat" (true = seen, false = not seen in photos, null = unknown)
@@ -219,7 +219,7 @@ function pass(l,X,skip){if(l.ns&&!X.ns&&skip!='ns')return false;for(const id in 
  if(X.q.length){const t=srch(l);if(!X.q.every(w=>t.includes(w)))return false}return true}
 // dropdown options: count of listings matching all OTHER filters; options with none are hidden (unless ticked). Feature boxes with no matches are greyed out.
 function facets(){const X=fx();
- for(const id in MSM){const base=LS.filter(l=>pass(l,X,id));document.querySelectorAll('#'+id+' .msp label').forEach(lb=>{const i=lb.querySelector('input'),n=base.filter(l=>MSM[id](l,i.value)).length;lb.hidden=!n&&!i.checked;lb.querySelector('.cnt').textContent=' ('+n+')'})}
+ for(const id in MSM){const base=LS.filter(l=>pass(l,X,id));document.querySelectorAll('#'+id+' .msp label').forEach(lb=>{const i=lb.querySelector('input'),n=base.filter(l=>MSM[id](l,i.value)).length;lb.hidden=(!n&&!i.checked)||(id=='fz'&&i.value=='ns'&&!X.ns);lb.querySelector('.cnt').textContent=' ('+n+')'})}
  {const n=LS.filter(l=>l.ns&&pass(l,X,'ns')).length;$('#fns').parentNode.querySelector('.cnt').textContent=' ('+n+')'}
  const cur=LS.filter(l=>pass(l,X));document.querySelectorAll('[data-feat]').forEach(e=>{const off=!e.checked&&!cur.some(l=>l.feat?.[e.dataset.feat]===true);e.disabled=off;e.parentNode.classList.toggle('off',off)})}
 function rows(){const X=fx();let a=LS.filter(l=>pass(l,X));
@@ -417,5 +417,7 @@ map.on('popupopen',e=>{if(!isPhone())return;const id=Object.keys(mk).find(k=>mk[
  const c=$('#pcard');c.innerHTML='<button type="button" class="pcx" aria-label="Close">×</button>';c.append(pvEl(l));c.hidden=false});
 $('#pcard').addEventListener('click',e=>{if(e.target.closest('.pcx,.pvgo'))setTimeout(pcHide,0)},true);map.on('click',pcHide);
 PHQ.addEventListener?.('change',()=>{pcHide();setTimeout(()=>map.invalidateSize(),50)});
+// unticking "Show no longer saved" also unticks the Zillow "No longer saved" option
+$('#fns').addEventListener('change',()=>{const i=document.querySelector('#fz .msp input[value="ns"]');if(!$('#fns').checked&&i&&i.checked){i.checked=false;msUpd('fz');render()}});
 render();geo();syncInit();
 </script></body></html>
