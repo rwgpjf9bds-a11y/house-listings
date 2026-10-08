@@ -247,8 +247,8 @@ function dot(a){const svg=$('#dp');if(!a.length){svg.innerHTML='';return}
 function mkSel(){for(const id in mk){const on=id==selId,e=mk[id].getElement();e&&e.classList.toggle('hsel',on);mk[id].setZIndexOffset(on?1000:0)}}
 function lotV(id){const m=mk[id];if(isPhone()&&lvId!=id&&m)pvSet('map');if(lvId==id){lvId=null;if(lvPrev)map.setView(lvPrev.c,lvPrev.z);lvPrev=null;pick(id,false,true);return}
  if(!m)return;if(lvId==null)lvPrev={c:map.getCenter(),z:map.getZoom()};lvId=id;pick(id,false,true);map.setView(m.getLatLng(),19)}
-function unpick(){if(selId==null)return;selId=null;render()}
-function pick(id,scroll,nopan){selId=id;render();const c=mk[id];if(c&&!nopan)map.panTo(c.getLatLng());if(scroll){const e=document.querySelector(`.card[data-id="${id}"]`);e&&e.scrollIntoView({block:'nearest'})}}
+function unpick(){if(selId==null&&lvId==null)return;selId=null;lvId=null;lvPrev=null;render()}
+function pick(id,scroll,nopan){if(lvId!=null&&lvId!=id){lvId=null;lvPrev=null}selId=id;render();const c=mk[id];if(c&&!nopan)map.panTo(c.getLatLng());if(scroll){const e=document.querySelector(`.card[data-id="${id}"]`);e&&e.scrollIntoView({block:'nearest'})}}
 // PRICE CHART (added Oct 7, 2026): listing price history (l.phist = [[date, event, price]] built by build.py), line + dot chart in an expander
 const pxCat=ev=>/removed|off market|withdrawn|expired|cancel/i.test(ev)?'off':/pending|contingent|under contract/i.test(ev)?'pend':/listed/i.test(ev)?'list':ev=='Current price'?'cur':'chg';
 const PXC={list:'var(--acc)',chg:'var(--acc)',cur:'var(--acc)',pend:'var(--gold)',off:'var(--mute)'};
