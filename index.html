@@ -69,7 +69,7 @@ table.cmp{border-collapse:collapse;width:100%}.cmp td,.cmp th{border-bottom:1px 
 .fgrid .fl{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mute)}
 .ms{position:relative}.msb{width:100%;text-align:left;font-size:14px;color:var(--ink);padding:5px 26px 5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}.msb::after{content:'\25BE';position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--mute)}.ms.open .msb{border-color:var(--acc)}
 .msp{position:absolute;left:0;top:calc(100% + 3px);z-index:5;min-width:100%;width:max-content;max-width:260px;max-height:260px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px #0003;padding:4px 0}.msp[hidden]{display:none}
-.msp label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:7px 12px;font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap}.msp label:hover{background:var(--bg)}.msp input{margin:0;width:16px;height:16px;flex:none}.msp label[hidden]{display:none}.msp .cnt{color:var(--mute);margin-left:-4px}.fck label.off{opacity:.4;cursor:default}
+.msp label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:7px 12px;font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap}.msp label:hover{background:var(--bg)}.msp input{margin:0;width:16px;height:16px;flex:none}.msp label[hidden]{display:none}.msp .cnt{color:var(--mute);margin-left:-4px}.fck label.off{opacity:.4;cursor:default}.nsck{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:13px;cursor:pointer}.nsck input{margin:0;width:16px;height:16px}.nsck .cnt{color:var(--mute);margin-left:-4px}
 .zl{margin:0 0 8px;font-size:16.5px;font-weight:600}
 @media(prefers-color-scheme:dark){a,a:visited{color:#8fc9ff}}
 /* PRICE CHART (added Oct 7, 2026) */
@@ -111,7 +111,7 @@ table.cmp{display:block;overflow-x:auto}.cmp th{width:auto;min-width:84px}.cmp t
 <div class="fl">State <div class="ms" id="fst" data-flt></div></div>
 <div class="fl" style="grid-column:1">Zillow <div class="ms" id="fz" data-flt></div></div>
 <div class="fl">Status <div class="ms" id="fs" data-flt></div></div>
-</div><div class="fgrid" style="margin-top:10px">
+</div><label class="nsck"><input type="checkbox" id="fns" data-flt> Show no longer saved<span class="cnt"></span></label><div class="fgrid" style="margin-top:10px">
 <label class="wide">Price range <span class="prng"><input data-flt data-num="price" data-op="min" type="number" step="25000" placeholder="Min" aria-label="Min price"><span>–</span><input id="mp" data-flt data-num="price" data-op="max" type="number" step="25000" placeholder="Max" aria-label="Max price"></span></label>
 <label>Min beds <input data-flt data-num="beds" data-op="min" type="number" min="0" step="1" placeholder="Any"></label>
 <label>Min baths <input data-flt data-num="baths" data-op="min" type="number" min="0" step="0.5" placeholder="Any"></label>
@@ -196,7 +196,7 @@ const rOk=(v,r)=>v.includes(r?String(Math.floor(r)):'none');
 const RO=a=>[5,4,3,2,1].map(n=>[String(n),n+(n>1?' stars':' star')+(a&&n<5?' ('+n+'–'+n+'.5)':''),`<span class="star">${'★'.repeat(n)}<span class="es">${'☆'.repeat(5-n)}</span></span>${a&&n<5?` <span class="mute">${n}–${n}.5</span>`:''}`]).concat([['none','Unrated']]);
 msInit('fr',RO(1));msInit('frr',RO(0));msInit('frh',RO(0));
 msInit('fst',[...new Set(LS.map(stOf).filter(Boolean))].sort().map(c=>[c,c]));
-msInit('fz',[['sale','For sale'],...[...new Set(LS.map(l=>l.zs).filter(Boolean))].sort().map(z=>['z:'+z,z]),['saved','Still saved (any status)'],['ns','No longer saved']]);
+msInit('fz',[['sale','For sale'],...[...new Set(LS.map(l=>l.zs).filter(Boolean))].sort().map(z=>['z:'+z,z]),['saved','Still saved (any status)']]);
 msInit('fc',[...new Set(LS.map(city).filter(Boolean))].sort().map(c=>[c,c]));
 msInit('fs',[...['Interested','Toured','Offer','Pass'].map(x=>[x,x]),['none','Untagged']]);
 // features: [key, label, group]. Values per listing live in listings_data.json "feat" (true = seen, false = not seen in photos, null = unknown)
@@ -212,14 +212,15 @@ const MSM={fs:(l,v)=>(st(l.id).status||'none')==v,fc:(l,v)=>city(l)==v,fst:(l,v)
  fz:(l,v)=>v=='ns'?!!l.ns:v=='saved'?!l.ns:v=='sale'?!l.zs:l.zs==v.slice(2),
  fr:(l,v)=>rOk([v],avg(st(l.id))),frr:(l,v)=>rOk([v],st(l.id).rob.rating),frh:(l,v)=>rOk([v],st(l.id).hannah.rating)};
 function fx(){return {q:$('#fq').value.toLowerCase().split(/\s+/).filter(Boolean),ms:Object.fromEntries(Object.keys(MSM).map(id=>[id,msV(id)])),
- nums:[...document.querySelectorAll('[data-num]')].filter(e=>e.value!=='').map(e=>[e.dataset.num,e.dataset.op,+e.value]),feats:[...document.querySelectorAll('[data-feat]:checked')].map(e=>e.dataset.feat)}}
-function pass(l,X,skip){for(const id in X.ms){const v=X.ms[id];if(id!=skip&&v.length&&!v.some(x=>MSM[id](l,x)))return false}
+ nums:[...document.querySelectorAll('[data-num]')].filter(e=>e.value!=='').map(e=>[e.dataset.num,e.dataset.op,+e.value]),feats:[...document.querySelectorAll('[data-feat]:checked')].map(e=>e.dataset.feat),ns:$('#fns').checked}}
+function pass(l,X,skip){if(l.ns&&!X.ns&&skip!='ns')return false;for(const id in X.ms){const v=X.ms[id];if(id!=skip&&v.length&&!v.some(x=>MSM[id](l,x)))return false}
  for(const [k,op,v] of X.nums){const x=num(l,k);if(!(x!=null&&(op=='min'?x>=v:op=='max'?x<=v:x==v)))return false}
  for(const f of X.feats)if(f!=skip&&l.feat?.[f]!==true)return false;
  if(X.q.length){const t=srch(l);if(!X.q.every(w=>t.includes(w)))return false}return true}
 // dropdown options: count of listings matching all OTHER filters; options with none are hidden (unless ticked). Feature boxes with no matches are greyed out.
 function facets(){const X=fx();
  for(const id in MSM){const base=LS.filter(l=>pass(l,X,id));document.querySelectorAll('#'+id+' .msp label').forEach(lb=>{const i=lb.querySelector('input'),n=base.filter(l=>MSM[id](l,i.value)).length;lb.hidden=!n&&!i.checked;lb.querySelector('.cnt').textContent=' ('+n+')'})}
+ {const n=LS.filter(l=>l.ns&&pass(l,X,'ns')).length;$('#fns').parentNode.querySelector('.cnt').textContent=' ('+n+')'}
  const cur=LS.filter(l=>pass(l,X));document.querySelectorAll('[data-feat]').forEach(e=>{const off=!e.checked&&!cur.some(l=>l.feat?.[e.dataset.feat]===true);e.disabled=off;e.parentNode.classList.toggle('off',off)})}
 function rows(){const X=fx();let a=LS.filter(l=>pass(l,X));
  // sort: field:asc|desc; listings with no value (no lot size, unrated) always go last; ties by price
@@ -236,7 +237,7 @@ function fsum(){const t=[],q=$('#fq').value.trim();if(q)t.push('"'+q+'"');
  [['fr','Avg rating'],['frr','Rob'],['frh','Hannah'],['fc','City'],['fst','State'],['fs','Status'],['fz','Zillow']].forEach(([s,n])=>{const v=msT(s);if(v)t.push(n+': '+v)});
  const pm=$('[data-num="price"][data-op="min"]').value,px=$('#mp').value;if(pm||px)t.push(pm&&px?$$(+pm)+'–'+$$(+px):pm?'From '+$$(+pm):'Up to '+$$(+px));
  document.querySelectorAll('[data-num]:not([data-num="price"])').forEach(e=>{if(e.value)t.push(e.closest('label').firstChild.textContent.trim()+' '+e.value)});
- document.querySelectorAll('[data-feat]:checked').forEach(e=>t.push(e.parentNode.textContent.trim()));
+ document.querySelectorAll('[data-feat]:checked').forEach(e=>t.push(e.parentNode.textContent.trim()));if($('#fns').checked)t.push('Incl. no longer saved');
  const s=$('#fsum');s.textContent=t.length?'Filtered by: '+t.join(' · '):'';s.title=t.join(' · ')}
 {const c=$('#charts');c.open=ld('hl.charts','open')=='open';c.ontoggle=()=>sv('hl.charts',c.open?'open':'closed')}
 function dot(a){const svg=$('#dp');if(!a.length){svg.innerHTML='';return}
