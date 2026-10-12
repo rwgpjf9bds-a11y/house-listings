@@ -277,7 +277,7 @@ function chPut(f,lo,hi){const e=1e-9;
  if(f.num){const r=v=>f.dp?(+v.toFixed(f.dp)).toString():String(Math.round(v));chMin(f).value=lo<=CH.d0+e?'':r(lo);chMax(f).value=hi>=CH.d1-e?'':r(hi);return}
  const i=Math.round(lo-f.off),j=Math.round(hi-f.off),full=i<=0&&j>=5;
  document.querySelectorAll('#'+f.ms+' .msp input').forEach(x=>x.checked=!full&&x.value!='none'&&+x.value>i&&+x.value<=j);msUpd(f.ms)}
-function chReset(){CHK.forEach(k=>{const f=CHF[k];if(f.num){chMin(f).value='';chMax(f).value=''}else{document.querySelectorAll('#'+f.ms+' .msp input').forEach(x=>x.checked=false);msUpd(f.ms)}});render();fit()}
+function chReset(){CHK.forEach(k=>{const f=CHF[k];if(f.num){chMin(f).value='';chMax(f).value=''}else{document.querySelectorAll('#'+f.ms+' .msp input').forEach(x=>x.checked=false);msUpd(f.ms)}});render();chFit()}
 const chOn=()=>CHK.some(k=>{const f=CHF[k];return f.num?chMin(f).value!==''||chMax(f).value!=='':msV(f.ms).length});
 function chTicks(a,b,f){if(f.ms)return [1,2,3,4,5];const r=b-a||1,raw=r/4,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p,s=(m<1.5?1:m<3?2:m<7?5:10)*p,u=f.disc||f.num=='year'?Math.max(1,s):s,t=[];
  for(let v=Math.ceil(a/u)*u;v<=b+1e-9;v+=u)t.push(+v.toFixed(6));return t}
@@ -312,7 +312,9 @@ function chDraw(){const svg=$('#dp'),{xf,X,lo,hi,d0,d1}=CH;if(!xf)return;const x
  svg.querySelectorAll('.chp').forEach(c=>c.classList.toggle('rng',!inR(+c.dataset.x)))}
 function chSnap(v){const {xf,d0,d1}=CH;v=Math.min(d1,Math.max(d0,v));return xf.ms?Math.round(v-xf.off)+xf.off:+(Math.round((v-d0)/xf.step)*xf.step+d0).toFixed(6)}
 function chMove(w,v){const {xf}=CH,g=xf.ms?1:xf.step;v=chSnap(v);if(w=='lo')CH.lo=Math.min(v,CH.hi-(xf.ms?1:0));else CH.hi=Math.max(v,CH.lo+(xf.ms?1:0));chDraw()}
-function chCommit(){chPut(CH.xf,CH.lo,CH.hi);render();fit()}
+// chart changes never move the map while "Only show listings in map view" is on (that would change which homes are in the population)
+const chFit=()=>{if(!inV())fit()};
+function chCommit(){chPut(CH.xf,CH.lo,CH.hi);render();chFit()}
 {const svg=$('#dp');let drag=null;
  const vx=e=>{const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return CH.d0+(q.x-CP.l)/(CP.r-CP.l)*(CH.d1-CH.d0)};
  svg.addEventListener('pointerdown',e=>{const g=e.target.closest('.chs');if(!g||!CH.xf)return;e.preventDefault();drag={w:g.dataset.s,id:e.pointerId,lo:CH.lo,hi:CH.hi};svg.setPointerCapture(e.pointerId);svg.classList.add('drag')});
