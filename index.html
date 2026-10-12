@@ -103,6 +103,11 @@ table.cmp{display:block;overflow-x:auto}.cmp th{width:auto;min-width:84px}.cmp t
 #chn{font-size:11px;padding:0 12px 6px}#chn:empty{display:none}
 #dp .chp{fill:var(--acc);opacity:.9;cursor:pointer}#dp .chp.out,#dp .chp.rng{fill:var(--mute);opacity:.3}
 #dp .chsh{fill:var(--ink);opacity:.07;pointer-events:none}#dp .chs{cursor:ew-resize;touch-action:none;outline:none}#dp .chs:focus-visible line{stroke-width:4}#dp .chhit{fill:transparent}#dp.drag{cursor:ew-resize}
+/* MAP LOCK + HOVER HIGHLIGHT */
+.lockctl{display:block;background:var(--card);color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font:600 12px system-ui;box-shadow:0 1px 5px #0004;cursor:pointer;white-space:nowrap}
+.lockctl.on{background:#ffd43b;color:#1c2a2b;border-color:#c99700;box-shadow:0 0 0 3px #ffd43b88,0 1px 6px #0006}
+#map.mlock .leaflet-control-zoom{opacity:.35;pointer-events:none}#map.mlock .leaflet-grab,#map.mlock .pin{cursor:default}
+.leaflet-marker-icon.hhov .pin,.leaflet-marker-icon.hhov .dot{background:#d9480f}.leaflet-marker-icon.hhov .pin{box-shadow:0 0 0 1px #000a,0 0 0 4px #d9480f55,0 2px 6px #0008}.leaflet-marker-icon.hhov .dot{box-shadow:0 0 0 1px #000a,0 0 0 5px #d9480f55}
 </style></head><body>
 <header><h1>House listings</h1><span id="fsum" class="mute"></span><button id="fclr2" hidden title="Clear all filters and reset the map">Clear filters ✕</button>
 <div class="fwrap"><button id="fb" aria-expanded="false" aria-controls="fp">Filters<span id="fn"></span> ▾</button>
@@ -173,6 +178,12 @@ const lblText=l=>lv=='ppsf'?$$(ppsf(l))+'/sf':lv=='sqft'?l.sqft.toLocaleString()
 tile('Labels','hl.tile.labels',`<i>Behavior</i>${radios('lbl',[['always','Always on'],['dynamic','Dynamic'],['off','Off']],lm)}<i>Label value</i>${radios('lblv',LV,lv)}`,
  e=>{if(e.target.name=='lbl'){lm=e.target.value;sv('hl.labels',lm);lblApply()}else{lv=e.target.value;sv('hl.lblval',lv);LS.forEach(l=>{const p=mk[l.id]?.getElement()?.querySelector('.pin');if(p)p.textContent=lblText(l)})}});
 map.on('zoomend',lblApply);lblApply();
+// MAP LOCK (added Oct 12, 2026): button below the Map/Labels boxes; locked = no panning/zooming by hand AND no automatic moves (filters, fit, pin clicks, Lot View, popups), pins can't be dragged
+let mLock=false;const MLH=['dragging','touchZoom','doubleClickZoom','scrollWheelZoom','boxZoom','keyboard'];
+['setView','panTo','panBy','flyTo','fitBounds','flyToBounds','setZoom','zoomIn','zoomOut','setZoomAround','panInsideBounds'].forEach(f=>{const o=map[f];map[f]=function(...a){return mLock?this:o.apply(this,a)}});
+const MLC=L.control({position:'topright'});MLC.onAdd=()=>{const b=L.DomUtil.create('button','lockctl');b.type='button';L.DomEvent.disableClickPropagation(b);L.DomEvent.disableScrollPropagation(b);b.textContent='🔓 Map unlocked';b.title='Lock the map in place';b.setAttribute('aria-pressed',false);b.onclick=()=>mlSet(!mLock);return b};MLC.addTo(map);
+function mlSet(on){mLock=on;MLH.forEach(h=>map[h]&&map[h][on?'disable':'enable']());for(const id in mk)mk[id].dragging&&mk[id].dragging[on?'disable':'enable']();
+ const b=MLC.getContainer();b.classList.toggle('on',on);b.textContent=on?'🔒 Map locked':'🔓 Map unlocked';b.setAttribute('aria-pressed',on);b.title=on?'Map is locked: no panning, zooming or automatic moves. Click to unlock.':'Lock the map in place';$('#map').classList.toggle('mlock',on)}
 // info button, top-left corner of the map (above the zoom buttons)
 {const C=L.control({position:'topleft'});C.onAdd=()=>{const d=L.DomUtil.create('div','infoctl');d.innerHTML='<button type="button" class="ib" aria-label="Map info" aria-expanded="false" title="Map info">i</button><div class="ip" hidden>Pins use Google Maps locations. If one is off, switch to Satellite + labels and drag it onto the roof; the app remembers the spot (the dot marks the exact point).</div>';
  L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);const b=d.querySelector('.ib'),p=d.querySelector('.ip'),set=o=>{p.hidden=!o;b.setAttribute('aria-expanded',o)};b.onclick=()=>set(p.hidden);map.on('click',()=>set(false));return d};
@@ -180,7 +191,7 @@ map.on('zoomend',lblApply);lblApply();
 const mk={};
 function coords(l){const o=st(l.id).ov.split(',').map(Number);if(o.length==2&&o.every(isFinite))return o;return l.fb||G[l.id]||null}
 function place(l){const c=coords(l);if(mk[l.id]){map.removeLayer(mk[l.id]);delete mk[l.id]}if(!c)return;
- mk[l.id]=L.marker(c,{draggable:true,title:'Drag onto the house',icon:L.divIcon({className:'',html:'<div class="pin">'+esc(lblText(l))+'</div><div class="dot"></div>',iconSize:[0,0],iconAnchor:[0,0]})}).bindPopup(()=>pvEl(l),{className:'pvpop',maxWidth:300,minWidth:280,autoPanPadding:[24,24]}).addTo(map).on('click',()=>{pick(l.id,true,true)}).on('dragend',e=>{const p=e.target.getLatLng(),s=st(l.id);setF(l.id,'ov',p.lat.toFixed(6)+', '+p.lng.toFixed(6));const f=$('#f-ov');if(f&&selId==l.id)f.value=s.ov});if(!rows().some(x=>x.id==l.id))map.removeLayer(mk[l.id])}
+ mk[l.id]=L.marker(c,{draggable:true,title:'Drag onto the house',icon:L.divIcon({className:'',html:'<div class="pin">'+esc(lblText(l))+'</div><div class="dot"></div>',iconSize:[0,0],iconAnchor:[0,0]})}).bindPopup(()=>pvEl(l),{className:'pvpop',maxWidth:300,minWidth:280,autoPanPadding:[24,24]}).addTo(map).on('click',()=>{pick(l.id,true,true)}).on('dragend',e=>{const p=e.target.getLatLng(),s=st(l.id);setF(l.id,'ov',p.lat.toFixed(6)+', '+p.lng.toFixed(6));const f=$('#f-ov');if(f&&selId==l.id)f.value=s.ov});if(mLock&&mk[l.id].dragging)mk[l.id].dragging.disable();if(!rows().some(x=>x.id==l.id))map.removeLayer(mk[l.id])}
 function fit(){const p=Object.values(mk).filter(m=>map.hasLayer(m)).map(m=>m.getLatLng());if(p.length)map.fitBounds(L.latLngBounds(p).pad(.4),{maxZoom:14})}
 async function geo(){const w=$('#warn');let miss=[];
  for(const l of LS){if(l.fb||G[l.id]){place(l);continue}
@@ -325,7 +336,7 @@ function chCommit(){chPut(CH.xf,CH.lo,CH.hi);render();chFit()}
   chMove(w,(w=='lo'?CH.lo:CH.hi)+(e.key=='ArrowLeft'?-st_:st_));chCommit();setTimeout(()=>{const n=$(`#dp .chs[data-s="${w}"]`);n&&n.focus()},0)});
  svg.addEventListener('click',e=>{const c=e.target.closest('.chp');if(c)pick(c.dataset.id,true)})}
 function mkSel(){for(const id in mk){const on=id==selId,e=mk[id].getElement();e&&e.classList.toggle('hsel',on);mk[id].setZIndexOffset(on?1000:0)}}
-function lotV(id){const m=mk[id];if(isPhone()&&lvId!=id&&m)pvSet('map');if(lvId==id){lvId=null;if(lvPrev)map.setView(lvPrev.c,lvPrev.z);lvPrev=null;pick(id,false,true);return}
+function lotV(id){if(mLock)return;const m=mk[id];if(isPhone()&&lvId!=id&&m)pvSet('map');if(lvId==id){lvId=null;if(lvPrev)map.setView(lvPrev.c,lvPrev.z);lvPrev=null;pick(id,false,true);return}
  if(!m)return;if(lvId==null)lvPrev={c:map.getCenter(),z:map.getZoom()};lvId=id;pick(id,false,true);map.setView(m.getLatLng(),19)}
 function unpick(){if(selId==null&&lvId==null)return;selId=null;lvId=null;lvPrev=null;render()}
 function pick(id,scroll,nopan){if(lvId!=null&&lvId!=id){lvId=null;lvPrev=null}selId=id;render();const c=mk[id];if(c&&!nopan)map.panTo(c.getLatLng());if(scroll){const e=document.querySelector(`.card[data-id="${id}"]`);e&&e.scrollIntoView({block:'nearest'})}}
@@ -502,5 +513,10 @@ $('#pcard').addEventListener('click',e=>{if(e.target.closest('.pcx,.pvgo'))setTi
 PHQ.addEventListener?.('change',()=>{pcHide();setTimeout(()=>map.invalidateSize(),50)});
 // unticking "Show no longer saved" also unticks the Zillow "No longer saved" option
 $('#fns').addEventListener('change',()=>{const i=document.querySelector('#fz .msp input[value="ns"]');if(!$('#fns').checked&&i&&i.checked){i.checked=false;msUpd('fz');render()}});
+// HOVER HIGHLIGHT (added Oct 12, 2026, PC/mouse only): hovering a listing card turns its pin red like a selected one; back to normal when the mouse leaves the card
+{let hv=null;const hq=matchMedia('(hover:hover) and (pointer:fine)');
+ const hset=id=>{if(id==hv)return;if(hv&&mk[hv]){const e=mk[hv].getElement();e&&e.classList.remove('hhov');mk[hv].setZIndexOffset(hv==selId?1000:0)}hv=id;if(id&&mk[id]){const e=mk[id].getElement();e&&e.classList.add('hhov');mk[id].setZIndexOffset(2000)}};
+ $('#list').addEventListener('mouseover',e=>{if(!hq.matches)return;const c=e.target.closest('.card');hset(c?c.dataset.id:null)});
+ $('#list').addEventListener('mouseleave',()=>hset(null))}
 render();geo();syncInit();
 </script></body></html>
