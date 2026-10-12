@@ -108,6 +108,8 @@ table.cmp{display:block;overflow-x:auto}.cmp th{width:auto;min-width:84px}.cmp t
 .lockctl.on{background:#ffd43b;color:#1c2a2b;border-color:#c99700;box-shadow:0 0 0 3px #ffd43b88,0 1px 6px #0006}
 #map.mlock .leaflet-control-zoom{opacity:.35;pointer-events:none}#map.mlock .leaflet-grab,#map.mlock .pin{cursor:default}
 .leaflet-marker-icon.hhov .pin,.leaflet-marker-icon.hhov .dot{background:#d9480f}.leaflet-marker-icon.hhov .pin{box-shadow:0 0 0 1px #000a,0 0 0 4px #d9480f55,0 2px 6px #0008}.leaflet-marker-icon.hhov .dot{box-shadow:0 0 0 1px #000a,0 0 0 5px #d9480f55}
+.pinctl{display:block;background:var(--card);color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:3px 7px;font:500 11px system-ui;box-shadow:0 1px 3px #0003;cursor:pointer;white-space:nowrap;opacity:.9}
+.pinctl.on{color:var(--ink);border-color:#c99700;background:#fff4c2;opacity:1}#map.plock .pin,#map.plock .dot{cursor:pointer}
 </style></head><body>
 <header><h1>House listings</h1><span id="fsum" class="mute"></span><button id="fclr2" hidden title="Clear all filters and reset the map">Clear filters ✕</button>
 <div class="fwrap"><button id="fb" aria-expanded="false" aria-controls="fp">Filters<span id="fn"></span> ▾</button>
@@ -182,16 +184,22 @@ map.on('zoomend',lblApply);lblApply();
 let mLock=false;const MLH=['dragging','touchZoom','doubleClickZoom','scrollWheelZoom','boxZoom','keyboard'];
 ['setView','panTo','panBy','flyTo','fitBounds','flyToBounds','setZoom','zoomIn','zoomOut','setZoomAround','panInsideBounds'].forEach(f=>{const o=map[f];map[f]=function(...a){return mLock?this:o.apply(this,a)}});
 const MLC=L.control({position:'topright'});MLC.onAdd=()=>{const b=L.DomUtil.create('button','lockctl');b.type='button';L.DomEvent.disableClickPropagation(b);L.DomEvent.disableScrollPropagation(b);b.textContent='🔓 Map unlocked';b.title='Lock the map in place';b.setAttribute('aria-pressed',false);b.onclick=()=>mlSet(!mLock);return b};MLC.addTo(map);
-function mlSet(on){mLock=on;MLH.forEach(h=>map[h]&&map[h][on?'disable':'enable']());for(const id in mk)mk[id].dragging&&mk[id].dragging[on?'disable':'enable']();
+function mlSet(on){mLock=on;MLH.forEach(h=>map[h]&&map[h][on?'disable':'enable']());pinDrag();
  const b=MLC.getContainer();b.classList.toggle('on',on);b.textContent=on?'🔒 Map locked':'🔓 Map unlocked';b.setAttribute('aria-pressed',on);b.title=on?'Map is locked: no panning, zooming or automatic moves. Click to unlock.':'Lock the map in place';$('#map').classList.toggle('mlock',on)}
+// PIN LOCK (added Oct 12, 2026): smaller button under the map lock; pins can only be dragged when it says "Pins moveable" AND the map is unlocked. Both reset on every page load: map unlocked, pins locked.
+let pLock=true;
+// also sets options.draggable, because Leaflet re-reads it when a hidden pin is shown again; render() calls this after showing/hiding pins
+function pinDrag(){try{const ok=!mLock&&!pLock;for(const id in mk){const m=mk[id];m.options.draggable=ok;m.dragging&&m.dragging[ok?'enable':'disable']()}}catch(e){}}
+const PLC=L.control({position:'topright'});PLC.onAdd=()=>{const b=L.DomUtil.create('button','pinctl');b.type='button';L.DomEvent.disableClickPropagation(b);L.DomEvent.disableScrollPropagation(b);b.onclick=()=>plSet(!pLock);return b};PLC.addTo(map);
+function plSet(on){pLock=on;pinDrag();const b=PLC.getContainer();b.classList.toggle('on',!on);b.textContent=on?'📌 Pins locked':'✋ Pins moveable';b.setAttribute('aria-pressed',on);b.title=on?'Pins are locked in place. Click to allow dragging a pin onto the right house.':'Pins can be dragged (unless the map is locked). Click to lock them again.';$('#map').classList.toggle('plock',on)}
 // info button, top-left corner of the map (above the zoom buttons)
-{const C=L.control({position:'topleft'});C.onAdd=()=>{const d=L.DomUtil.create('div','infoctl');d.innerHTML='<button type="button" class="ib" aria-label="Map info" aria-expanded="false" title="Map info">i</button><div class="ip" hidden>Pins use Google Maps locations. If one is off, switch to Satellite + labels and drag it onto the roof; the app remembers the spot (the dot marks the exact point).</div>';
+{const C=L.control({position:'topleft'});C.onAdd=()=>{const d=L.DomUtil.create('div','infoctl');d.innerHTML='<button type="button" class="ib" aria-label="Map info" aria-expanded="false" title="Map info">i</button><div class="ip" hidden>Pins use Google Maps locations. If one is off, switch to Satellite + labels, tap \u201cPins locked\u201d (under the map buttons) so it says \u201cPins moveable\u201d, and drag the pin onto the roof; the app remembers the spot (the dot marks the exact point).</div>';
  L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);const b=d.querySelector('.ib'),p=d.querySelector('.ip'),set=o=>{p.hidden=!o;b.setAttribute('aria-expanded',o)};b.onclick=()=>set(p.hidden);map.on('click',()=>set(false));return d};
  C.addTo(map);const el=C.getContainer();el.parentNode.prepend(el)}
 const mk={};
 function coords(l){const o=st(l.id).ov.split(',').map(Number);if(o.length==2&&o.every(isFinite))return o;return l.fb||G[l.id]||null}
 function place(l){const c=coords(l);if(mk[l.id]){map.removeLayer(mk[l.id]);delete mk[l.id]}if(!c)return;
- mk[l.id]=L.marker(c,{draggable:true,title:'Drag onto the house',icon:L.divIcon({className:'',html:'<div class="pin">'+esc(lblText(l))+'</div><div class="dot"></div>',iconSize:[0,0],iconAnchor:[0,0]})}).bindPopup(()=>pvEl(l),{className:'pvpop',maxWidth:300,minWidth:280,autoPanPadding:[24,24]}).addTo(map).on('click',()=>{pick(l.id,true,true)}).on('dragend',e=>{const p=e.target.getLatLng(),s=st(l.id);setF(l.id,'ov',p.lat.toFixed(6)+', '+p.lng.toFixed(6));const f=$('#f-ov');if(f&&selId==l.id)f.value=s.ov});if(mLock&&mk[l.id].dragging)mk[l.id].dragging.disable();if(!rows().some(x=>x.id==l.id))map.removeLayer(mk[l.id])}
+ mk[l.id]=L.marker(c,{draggable:true,title:'Drag onto the house',icon:L.divIcon({className:'',html:'<div class="pin">'+esc(lblText(l))+'</div><div class="dot"></div>',iconSize:[0,0],iconAnchor:[0,0]})}).bindPopup(()=>pvEl(l),{className:'pvpop',maxWidth:300,minWidth:280,autoPanPadding:[24,24]}).addTo(map).on('click',()=>{pick(l.id,true,true)}).on('dragend',e=>{const p=e.target.getLatLng(),s=st(l.id);setF(l.id,'ov',p.lat.toFixed(6)+', '+p.lng.toFixed(6));const f=$('#f-ov');if(f&&selId==l.id)f.value=s.ov});if((mLock||pLock)&&mk[l.id].dragging)mk[l.id].dragging.disable();if(!rows().some(x=>x.id==l.id))map.removeLayer(mk[l.id])}
 function fit(){const p=Object.values(mk).filter(m=>map.hasLayer(m)).map(m=>m.getLatLng());if(p.length)map.fitBounds(L.latLngBounds(p).pad(.4),{maxZoom:14})}
 async function geo(){const w=$('#warn');let miss=[];
  for(const l of LS){if(l.fb||G[l.id]){place(l);continue}
@@ -247,7 +255,7 @@ function render(){const all=rows(),bb=inV()&&map.getBounds(),a=bb?all.filter(l=>
 <div>${esc(l.beds)} bd · ${esc(l.baths)} ba · ${l.sqft.toLocaleString()} sqft · ${$$(ppsf(l))}/sqft${num(l,'lotAc')!=null?' · '+(+num(l,'lotAc').toFixed(2))+' ac':''}</div><div class="mute">${esc(l.address)}</div>
 <div class="row" style="margin-top:8px"><label class="mute"><input type="checkbox" data-c="${l.id}" ${cmp.includes(l.id)?'checked':''}> Compare</label><button class="lv${lvId==l.id?' on':''}" data-lv="${l.id}" title="Zoom the map to this lot">Lot View</button><button data-d="${l.id}">Details</button></div></div></div>`}).join(''):(bb&&all.length?'<p class="mute">No listings in the current map view. Pan or zoom out, or untick "Only show listings in map view".</p>':'<p class="mute">No listings match these filters. <button onclick="clearF()">Clear filters</button></p>');
  $('#cmpb').textContent='Compare ('+cmp.length+')';dot(a);
- const vis=new Set(all.map(l=>l.id));for(const id in mk)vis.has(id)?map.hasLayer(mk[id])||mk[id].addTo(map):map.removeLayer(mk[id]);mkSel();
+ const vis=new Set(all.map(l=>l.id));for(const id in mk)vis.has(id)?map.hasLayer(mk[id])||mk[id].addTo(map):map.removeLayer(mk[id]);mkSel();pinDrag();
  const n=[...document.querySelectorAll('[data-flt]')].filter(e=>e.classList.contains('ms')?msV(e.id).length:e.type=='checkbox'?e.checked:e.value).length;$('#fn').textContent=n||'';$('#fclr2').hidden=!n;$('#fres').textContent=all.length+' of '+LS.length+' listings';fsum();facets()}
 // text summary of applied filters, shown left of the Filters button
 function fsum(){const t=[],q=$('#fq').value.trim();if(q)t.push('"'+q+'"');
@@ -518,5 +526,6 @@ $('#fns').addEventListener('change',()=>{const i=document.querySelector('#fz .ms
  const hset=id=>{if(id==hv)return;if(hv&&mk[hv]){const e=mk[hv].getElement();e&&e.classList.remove('hhov');mk[hv].setZIndexOffset(hv==selId?1000:0)}hv=id;if(id&&mk[id]){const e=mk[id].getElement();e&&e.classList.add('hhov');mk[id].setZIndexOffset(2000)}};
  $('#list').addEventListener('mouseover',e=>{if(!hq.matches)return;const c=e.target.closest('.card');hset(c?c.dataset.id:null)});
  $('#list').addEventListener('mouseleave',()=>hset(null))}
+plSet(true);
 render();geo();syncInit();
 </script></body></html>
