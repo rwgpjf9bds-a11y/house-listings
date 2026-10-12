@@ -36,7 +36,7 @@ main{flex:1;display:grid;grid-template-columns:var(--sw,400px) 7px 1fr;min-heigh
 .fck{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:13px}.fck label{display:flex;gap:6px;align-items:flex-start;cursor:pointer}.fck input{margin:3px 0 0}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}.chip{font-size:12px;padding:2px 9px;border-radius:99px;background:var(--card);border:1px solid var(--acc);color:var(--ink)}
 .fpf{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:13px}#fn:not(:empty){background:var(--acc);color:#fff;border-radius:99px;padding:0 7px;margin-left:6px;font-size:12px}
-#dp{width:100%;height:150px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px}
+#dp{width:100%;height:auto;aspect-ratio:40/21;display:block;touch-action:pan-y;background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px}
 #warn{font-size:13px;color:var(--mute);margin:0 0 10px}#warn:empty{display:none}
 .infoctl{position:relative}.infoctl .ib{display:block;width:30px;height:30px;padding:0;border-radius:50%;font:italic 700 17px/1 Georgia,serif;background:var(--card);color:var(--acc);border:1px solid var(--line);box-shadow:0 1px 5px #0004}.infoctl .ip{position:absolute;left:38px;top:0;width:min(270px,60vw);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font-size:12px;line-height:1.45;box-shadow:0 4px 16px #0004}.infoctl .ip[hidden]{display:none}
 .ov{position:fixed;inset:0;background:#000a;display:none;z-index:1000;overflow:auto;padding:16px}.ov.show{display:block}
@@ -98,6 +98,11 @@ body:not(.pv-map) #map{visibility:hidden}body.pv-map #side{visibility:hidden}
 #map .leaflet-control-attribution{font-size:9px;max-width:100%;margin-bottom:calc(64px + env(safe-area-inset-bottom))}
 table.cmp{display:block;overflow-x:auto}.cmp th{width:auto;min-width:84px}.cmp td{min-width:160px}
 }
+/* CHART FILTER */
+.chc{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:4px 12px 8px;font-size:12px;color:var(--mute)}.chc label{display:flex;align-items:center;gap:4px}.chc select{font-size:13px;color:var(--ink)}#chr{margin-left:auto;font-size:12px}
+#chn{font-size:11px;padding:0 12px 6px}#chn:empty{display:none}
+#dp .chp{fill:var(--acc);opacity:.9;cursor:pointer}#dp .chp.out,#dp .chp.rng{fill:var(--mute);opacity:.3}
+#dp .chsh{fill:var(--ink);opacity:.07;pointer-events:none}#dp .chs{cursor:ew-resize;touch-action:none;outline:none}#dp .chs:focus-visible line{stroke-width:4}#dp .chhit{fill:transparent}#dp.drag{cursor:ew-resize}
 </style></head><body>
 <header><h1>House listings</h1><span id="fsum" class="mute"></span><button id="fclr2" hidden title="Clear all filters and reset the map">Clear filters ✕</button>
 <div class="fwrap"><button id="fb" aria-expanded="false" aria-controls="fp">Filters<span id="fn"></span> ▾</button>
@@ -113,14 +118,15 @@ table.cmp{display:block;overflow-x:auto}.cmp th{width:auto;min-width:84px}.cmp t
 <div class="fl">Status <div class="ms" id="fs" data-flt></div></div>
 </div><label class="nsck"><input type="checkbox" id="fns" data-flt> Show no longer saved<span class="cnt"></span></label><div class="fgrid" style="margin-top:10px">
 <label class="wide">Price range <span class="prng"><input data-flt data-num="price" data-op="min" type="number" step="25000" placeholder="Min" aria-label="Min price"><span>–</span><input id="mp" data-flt data-num="price" data-op="max" type="number" step="25000" placeholder="Max" aria-label="Max price"></span></label>
-<label>Min beds <input data-flt data-num="beds" data-op="min" type="number" min="0" step="1" placeholder="Any"></label>
+<label>Sqft <span class="prng"><input data-flt data-num="sqft" data-op="min" type="number" step="50" placeholder="Min" aria-label="Min Sqft"><span>–</span><input data-flt data-num="sqft" data-op="max" type="number" step="50" placeholder="Max" aria-label="Max Sqft"></span></label>
+<label>$/sqft <span class="prng"><input data-flt data-num="ppsf" data-op="min" type="number" min="0" step="5" placeholder="Min" aria-label="Min $/sqft"><span>–</span><input data-flt data-num="ppsf" data-op="max" type="number" min="0" step="5" placeholder="Max" aria-label="Max $/sqft"></span></label>
+<label>Lot (acres) <span class="prng"><input data-flt data-num="lotAc" data-op="min" type="number" min="0" step="0.05" placeholder="Min" aria-label="Min Lot (acres)"><span>–</span><input data-flt data-num="lotAc" data-op="max" type="number" min="0" step="0.05" placeholder="Max" aria-label="Max Lot (acres)"></span></label>
+<label>Year built <span class="prng"><input data-flt data-num="year" data-op="min" type="number" step="1" placeholder="Min" aria-label="Min Year built"><span>–</span><input data-flt data-num="year" data-op="max" type="number" step="1" placeholder="Max" aria-label="Max Year built"></span></label>
+<label>Bedrooms <span class="prng"><input data-flt data-num="beds" data-op="min" type="number" min="0" step="1" placeholder="Min" aria-label="Min Bedrooms"><span>–</span><input data-flt data-num="beds" data-op="max" type="number" min="0" step="1" placeholder="Max" aria-label="Max Bedrooms"></span></label>
 <label>Min baths <input data-flt data-num="baths" data-op="min" type="number" min="0" step="0.5" placeholder="Any"></label>
-<label>Min sqft <input data-flt data-num="sqft" data-op="min" type="number" step="250" placeholder="Any"></label>
-<label>Min lot (acres) <input data-flt data-num="lotAc" data-op="min" type="number" min="0" step="0.25" placeholder="Any"></label>
-<label>Built in or after <input data-flt data-num="year" data-op="min" type="number" step="1" placeholder="Any"></label>
 </div><h4>Must have</h4><div id="ffeat"></div><div class="row fpf"><button id="fclr">Clear filters</button><span class="mute" id="fres"></span><button id="fdone" style="margin-left:auto">Done</button></div></div></div>
 <button id="cmpb">Compare (0)</button><div class="fwrap" id="sywrap"><button id="syb" class="sy" aria-expanded="false" aria-controls="syp">Sync</button><div id="syp" class="fp" hidden></div></div><i class="hbr"></i></header>
-<main><div id="side"><p id="warn"></p><details id="charts" class="tray"><summary>Charts</summary><svg id="dp" viewBox="0 0 400 150" role="img" aria-label="Price versus size"></svg></details>
+<main><div id="side"><p id="warn"></p><details id="charts" class="tray"><summary>Charts</summary><div class="chc"><label>X <select id="chx" aria-label="Chart X axis"></select></label><label>Y <select id="chy" aria-label="Chart Y axis"></select></label><button id="chr" type="button" title="Clear the chart range (and the matching Filters fields)">Reset chart</button></div><svg id="dp" viewBox="0 0 400 210" role="img" aria-label="Listings chart"></svg><div id="chn" class="mute"></div></details>
 <div class="lbar"><label class="inv"><input type="checkbox" id="inview"> Only show listings in map view</label><label>Sort <select id="sort" autocomplete="off"><option value="price:asc">Price: low to high</option><option value="price:desc" selected>Price: high to low</option><option value="ppsf:asc">$/sqft: low to high</option><option value="ppsf:desc">$/sqft: high to low</option><option value="sqft:asc">Size: low to high</option><option value="sqft:desc">Size: high to low</option><option value="lot:asc">Lot size: low to high</option><option value="lot:desc">Lot size: high to low</option><option value="rating:asc">Rating (avg): low to high</option><option value="rating:desc">Rating (avg): high to low</option></select></label></div><div id="list"></div><details id="arch" class="tray" hidden><summary></summary><div id="archl"></div></details></div><div id="split" role="separator" aria-orientation="vertical" aria-label="Resize list and map" tabindex="0"></div><div id="map"></div></main>
 <div id="lmt" role="group" aria-label="Show list or map"><button type="button" data-v="list">List</button><button type="button" data-v="map">Map</button></div><div id="pcard" hidden></div>
 <div class="ov" id="ov"><div class="pane" id="pane"></div></div>
@@ -205,7 +211,7 @@ const FEATS=[['pool','Pool','Outdoor'],['coveredPatio','Covered patio','Outdoor'
 $('#ffeat').innerHTML=[...new Set(FEATS.map(f=>f[2]))].map(g=>`<h5>${g}</h5><div class="fck">${FEATS.filter(f=>f[2]==g).map(f=>`<label><input type="checkbox" data-flt data-feat="${f[0]}">${esc(f[1])}</label>`).join('')}</div>`).join('');
 const featHtml=l=>{if(!l.feat)return '';const by=v=>FEATS.filter(f=>l.feat[f[0]]===v).map(f=>esc(f[1]));const y=by(true),n=by(false),u=FEATS.filter(f=>!(f[0] in l.feat)||l.feat[f[0]]==null).map(f=>esc(f[1]));
  return `<h3>Features</h3><div class="chips">${y.map(t=>`<span class="chip">✓ ${t}</span>`).join('')||'<span class="mute">None recorded</span>'}</div>${n.length?`<p class="mute" style="font-size:13px;margin:4px 0"><b>Not seen in photos:</b> ${n.join(', ')}</p>`:''}${u.length?`<p class="mute" style="font-size:13px;margin:4px 0"><b>Can't tell from photos:</b> ${u.join(', ')}</p>`:''}`};
-const num=(l,k)=>{const v=k in l&&typeof l[k]=='number'?l[k]:l.n?.[k];return typeof v=='number'?v:null};
+const num=(l,k)=>{if(k=='ppsf')return l.sqft?l.price/l.sqft:null;const v=k in l&&typeof l[k]=='number'?l[k]:l.n?.[k];return typeof v=='number'?v:null};
 const srch=l=>{const s=st(l.id);return [l.address,l.zs,l.ns?'no longer saved':'',l.hood,l.isd,l.note,l.garage,l.hoa,(l.analysis||'').replace(/<[^>]+>/g,' '),...FEATS.filter(f=>l.feat?.[f[0]]===true).map(f=>f[1]),s.status,s.rob.notes,s.hannah.notes,s.notes].join(' ').toLowerCase()};
 // FACETED FILTERS (added Oct 8, 2026): one test per listing, so each dropdown can count "all other filters except me"
 const MSM={fs:(l,v)=>(st(l.id).status||'none')==v,fc:(l,v)=>city(l)==v,fst:(l,v)=>stOf(l)==v,
@@ -236,15 +242,86 @@ function render(){const all=rows(),bb=inV()&&map.getBounds(),a=bb?all.filter(l=>
 function fsum(){const t=[],q=$('#fq').value.trim();if(q)t.push('"'+q+'"');
  [['fr','Avg rating'],['frr','Rob'],['frh','Hannah'],['fc','City'],['fst','State'],['fs','Status'],['fz','Zillow']].forEach(([s,n])=>{const v=msT(s);if(v)t.push(n+': '+v)});
  const pm=$('[data-num="price"][data-op="min"]').value,px=$('#mp').value;if(pm||px)t.push(pm&&px?$$(+pm)+'–'+$$(+px):pm?'From '+$$(+pm):'Up to '+$$(+px));
- document.querySelectorAll('[data-num]:not([data-num="price"])').forEach(e=>{if(e.value)t.push(e.closest('label').firstChild.textContent.trim()+' '+e.value)});
+ [['sqft','Sqft',v=>(+v).toLocaleString()],['ppsf','$/sqft',v=>'$'+v],['lotAc','Lot',v=>v+' ac'],['year','Built',v=>v],['beds','Beds',v=>v],['baths','Baths',v=>v]].forEach(([k,n,f])=>{const a=$(`[data-num="${k}"][data-op="min"]`)?.value,b=$(`[data-num="${k}"][data-op="max"]`)?.value;if(a||b)t.push(n+' '+(a&&b?f(a)+'–'+f(b):a?f(a)+'+':'up to '+f(b)))});
  document.querySelectorAll('[data-feat]:checked').forEach(e=>t.push(e.parentNode.textContent.trim()));if($('#fns').checked)t.push('Incl. no longer saved');
  const s=$('#fsum');s.textContent=t.length?'Filtered by: '+t.join(' · '):'';s.title=t.join(' · ')}
 {const c=$('#charts');c.open=ld('hl.charts','open')=='open';c.ontoggle=()=>sv('hl.charts',c.open?'open':'closed')}
-function dot(a){const svg=$('#dp');if(!a.length){svg.innerHTML='';return}
- const xs=a.map(l=>l.sqft),ys=a.map(l=>l.price),x0=Math.min(...xs)-300,x1=Math.max(...xs)+300,y0=Math.min(...ys)*.9,y1=Math.max(...ys)*1.05;
- const X=v=>40+(v-x0)/(x1-x0||1)*340,Y=v=>120-(v-y0)/(y1-y0||1)*100;
- svg.innerHTML=`<text x="6" y="12" font-size="10" fill="var(--mute)">Price vs. size (filtered)</text><line x1="40" y1="120" x2="380" y2="120" stroke="var(--line)"/><text x="40" y="143" font-size="10" fill="var(--mute)">${Math.round(x0)} sqft</text><text x="380" y="143" font-size="10" text-anchor="end" fill="var(--mute)">${Math.round(x1)} sqft</text>`+
- a.map(l=>`<circle cx="${X(l.sqft)}" cy="${Y(l.price)}" r="${l.id==selId?7:5}" fill="var(--acc)"><title>${esc(l.address)} ${$$(l.price)}</title></circle><text x="${X(l.sqft)+9}" y="${Y(l.price)+4}" font-size="10" fill="var(--ink)">${short(l.price)}</text>`).join('')}
+// CHART FILTER (added Oct 12, 2026): X/Y field pickers + two vertical sliders that set the X field's range in the Filters panel (two-way). Population = the listings pane ignoring only the X range.
+const kM=v=>v>=1e6?'$'+(v/1e6).toFixed(2).replace(/\.?0+$/,'')+'M':'$'+Math.round(v/1e3)+'K';
+const CHF={price:{n:'Price',v:l=>l.price,num:'price',step:5000,f:kM},
+ sqft:{n:'Sqft',v:l=>l.sqft||null,num:'sqft',step:50,f:v=>Math.round(v).toLocaleString()},
+ ppsf:{n:'$/sqft',v:l=>l.sqft?ppsf(l):null,num:'ppsf',step:5,f:v=>'$'+Math.round(v)},
+ lot:{n:'Lot (acres)',v:l=>num(l,'lotAc'),num:'lotAc',step:.05,dp:2,f:v=>(+v.toFixed(2))+' ac'},
+ beds:{n:'Bedrooms',v:l=>num(l,'beds'),num:'beds',step:1,disc:1,f:v=>v+' bd'},
+ rob:{n:'Rob rating',v:l=>st(l.id).rob.rating||null,ms:'frr',off:.5},
+ hannah:{n:'Hannah rating',v:l=>st(l.id).hannah.rating||null,ms:'frh',off:.5},
+ avg:{n:'Avg rating',v:l=>avg(st(l.id))||null,ms:'fr',off:.75},
+ year:{n:'Year built',v:l=>num(l,'year'),num:'year',step:1,f:v=>String(Math.round(v))}};
+const CHK=['price','sqft','ppsf','lot','beds','year','avg','rob','hannah'];
+const CP={l:54,r:388,t:20,b:170};let CH={};
+{const o=CHK.map(k=>`<option value="${k}">${CHF[k].n}</option>`).join('');$('#chx').innerHTML=o;$('#chy').innerHTML=o;
+ let x=ld('hl.chx','sqft'),y=ld('hl.chy','price');$('#chx').value=CHF[x]?x:'sqft';$('#chy').value=CHF[y]?y:'price';
+ $('#chx').onchange=()=>{sv('hl.chx',$('#chx').value);render()};$('#chy').onchange=()=>{sv('hl.chy',$('#chy').value);render()};
+ $('#chr').onclick=chReset}
+// population: everything the listings pane shows, except the X field's own range
+function chPop(xf){const X=fx();let skip=null;if(xf.num)X.nums=X.nums.filter(n=>n[0]!=xf.num);else skip=xf.ms;
+ let p=LS.filter(l=>pass(l,X,skip));if(inV()){const bb=map.getBounds();p=p.filter(l=>{const c=coords(l);return c&&bb.contains(c)})}return p}
+const chMin=f=>$(`[data-num="${f.num}"][data-op="min"]`),chMax=f=>$(`[data-num="${f.num}"][data-op="max"]`);
+const chLv=f=>msV(f.ms).filter(v=>v!='none').map(Number);
+// current slider positions read back from the Filters panel
+function chGet(f,d0,d1){const c=v=>Math.min(d1,Math.max(d0,v));
+ if(f.num){const a=chMin(f).value,b=chMax(f).value;return [a===''?d0:c(+a),b===''?d1:c(+b)]}
+ const t=chLv(f);return t.length?[Math.min(...t)-1+f.off,Math.max(...t)+f.off]:[d0,d1]}
+// write slider positions into the Filters panel (an end slider = no limit)
+function chPut(f,lo,hi){const e=1e-9;
+ if(f.num){const r=v=>f.dp?(+v.toFixed(f.dp)).toString():String(Math.round(v));chMin(f).value=lo<=CH.d0+e?'':r(lo);chMax(f).value=hi>=CH.d1-e?'':r(hi);return}
+ const i=Math.round(lo-f.off),j=Math.round(hi-f.off),full=i<=0&&j>=5;
+ document.querySelectorAll('#'+f.ms+' .msp input').forEach(x=>x.checked=!full&&x.value!='none'&&+x.value>i&&+x.value<=j);msUpd(f.ms)}
+function chReset(){CHK.forEach(k=>{const f=CHF[k];if(f.num){chMin(f).value='';chMax(f).value=''}else{document.querySelectorAll('#'+f.ms+' .msp input').forEach(x=>x.checked=false);msUpd(f.ms)}});render();fit()}
+const chOn=()=>CHK.some(k=>{const f=CHF[k];return f.num?chMin(f).value!==''||chMax(f).value!=='':msV(f.ms).length});
+function chTicks(a,b,f){if(f.ms)return [1,2,3,4,5];const r=b-a||1,raw=r/4,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p,s=(m<1.5?1:m<3?2:m<7?5:10)*p,u=f.disc||f.num=='year'?Math.max(1,s):s,t=[];
+ for(let v=Math.ceil(a/u)*u;v<=b+1e-9;v+=u)t.push(+v.toFixed(6));return t}
+const chJit=(id,amt)=>{let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))|0;return ((h&1023)/1023-.5)*amt};
+function dot(a){const svg=$('#dp'),xk=$('#chx').value,yk=$('#chy').value,xf=CHF[xk],yf=CHF[yk];
+ const pop=chPop(xf),pts=pop.map(l=>({l,x:xf.v(l),y:yf.v(l)})).filter(p=>p.x!=null&&p.y!=null),shown=new Set(a.map(l=>l.id));
+ $('#chr').disabled=!chOn();const miss=pop.length-pts.length;
+ $('#chn').textContent=pts.length?(miss?miss+' listing'+(miss>1?'s':'')+' not plotted (no '+[xf,yf].filter(f=>pop.some(l=>f.v(l)==null)).map(f=>f.n.toLowerCase()).join(' / ')+')':''):'';
+ if(!pts.length){svg.innerHTML=`<text x="200" y="100" font-size="12" text-anchor="middle" fill="var(--mute)">${pop.length?'No listings with a '+xf.n.toLowerCase()+' and '+yf.n.toLowerCase():'No listings to chart'}</text>`;CH={};return}
+ // X domain: rating fields have fixed star edges; numbers snap to the field's step
+ let d0,d1;if(xf.ms){d0=xf.off;d1=5+xf.off}else{const xs=pts.map(p=>p.x);d0=Math.floor(Math.min(...xs)/xf.step)*xf.step;d1=Math.ceil(Math.max(...xs)/xf.step)*xf.step;if(d1<=d0){d0-=xf.step;d1+=xf.step}}
+ const ys=pts.map(p=>p.y);let y0,y1;if(yf.ms){y0=.5;y1=5.5}else{y0=Math.min(...ys);y1=Math.max(...ys);const pd=(y1-y0||y1||1)*.08;y0-=pd;y1+=pd;if(yf.disc){y0=Math.floor(y0);y1=Math.ceil(y1)}}
+ const X=v=>CP.l+(v-d0)/(d1-d0)*(CP.r-CP.l),Y=v=>CP.b-(v-y0)/(y1-y0||1)*(CP.b-CP.t);
+ const [lo,hi]=chGet(xf,d0,d1);CH={xf,d0,d1,lo,hi,X};
+ const ff=(f,v)=>f.ms?v+'★':f.f(v),jx=xf.ms||xf.disc?.28:0,jy=yf.ms||yf.disc?.28:0;
+ const xt=chTicks(d0,d1,xf).map(v=>`<line x1="${X(v)}" y1="${CP.b}" x2="${X(v)}" y2="${CP.b+4}" stroke="var(--mute)"/><text x="${X(v)}" y="${CP.b+15}" font-size="10" text-anchor="middle" fill="var(--mute)">${ff(xf,v)}</text>`).join('');
+ const yt=chTicks(y0,y1,yf).filter(v=>v>=y0&&v<=y1).map(v=>`<line x1="${CP.l}" y1="${Y(v)}" x2="${CP.r}" y2="${Y(v)}" stroke="var(--line)"/><text x="${CP.l-4}" y="${Y(v)+3}" font-size="10" text-anchor="end" fill="var(--mute)">${ff(yf,v)}</text>`).join('');
+ const dots=pts.sort((p,q)=>(p.l.id==selId)-(q.l.id==selId)).map(p=>{const on=shown.has(p.l.id),sel=p.l.id==selId,cx=X(p.x+chJit(p.l.id,jx)),cy=Y(p.y+chJit(p.l.id+'y',jy));
+  return `<circle class="chp${on?'':' out'}" data-id="${p.l.id}" data-x="${p.x}" cx="${cx}" cy="${cy}" r="${sel?6.5:4.2}"${sel?' stroke="var(--ink)" stroke-width="1.5"':''}><title>${esc(p.l.address)}\n${xf.n}: ${ff(xf,p.x)} · ${yf.n}: ${ff(yf,p.y)}</title></circle>`}).join('');
+ const hd=w=>`<g class="chs" data-s="${w}" tabindex="0" role="slider" aria-label="${w=='lo'?'Lowest':'Highest'} ${esc(xf.n)}"><rect class="chhit" x="-12" y="${CP.t-16}" width="24" height="${CP.b-CP.t+22}"/><line y1="${CP.t-2}" y2="${CP.b}" stroke="var(--acc)" stroke-width="2"/><rect x="-5" y="${CP.b-30}" width="10" height="22" rx="3" fill="var(--acc)"/><text class="chv" y="${CP.t-6}" font-size="10" font-weight="600" fill="var(--acc)"></text></g>`;
+ svg.innerHTML=`<g>${yt}</g><line x1="${CP.l}" y1="${CP.b}" x2="${CP.r}" y2="${CP.b}" stroke="var(--mute)"/>${xt}<text x="${(CP.l+CP.r)/2}" y="${CP.b+31}" font-size="10.5" font-weight="600" text-anchor="middle" fill="var(--ink)">${esc(xf.n)}</text><text transform="translate(9,${(CP.t+CP.b)/2}) rotate(-90)" font-size="10.5" font-weight="600" text-anchor="middle" fill="var(--ink)">${esc(yf.n)}</text><rect class="chsh" data-s="lo" y="${CP.t-2}" height="${CP.b-CP.t+2}"/><rect class="chsh" data-s="hi" y="${CP.t-2}" height="${CP.b-CP.t+2}"/><g>${dots}</g>${hd('lo')}${hd('hi')}`;
+ chDraw()}
+// move sliders, shading, labels and point fading to CH.lo / CH.hi (no re-render, so dragging stays smooth)
+function chDraw(){const svg=$('#dp'),{xf,X,lo,hi,d0,d1}=CH;if(!xf)return;const xl=X(lo),xh=X(hi);
+ const sh=svg.querySelectorAll('.chsh');sh[0].setAttribute('x',CP.l);sh[0].setAttribute('width',Math.max(0,xl-CP.l));sh[1].setAttribute('x',xh);sh[1].setAttribute('width',Math.max(0,CP.r-xh));
+ const lab=(v,w)=>xf.ms?(w=='lo'?'≥'+Math.round(v-xf.off+1)+'★':'≤'+Math.round(v-xf.off)+'★'):(w=='lo'&&v<=d0||w=='hi'&&v>=d1?'Any':xf.f(v));
+ svg.querySelectorAll('.chs').forEach(g=>{const w=g.dataset.s,v=w=='lo'?lo:hi,x=X(v);g.setAttribute('transform',`translate(${x},0)`);const t=g.querySelector('.chv');t.textContent=lab(v,w);
+  t.setAttribute('text-anchor',x<CP.l+30?'start':x>CP.r-30?'end':'middle');t.setAttribute('x',x<CP.l+30?-4:x>CP.r-30?4:0);g.setAttribute('aria-valuetext',t.textContent)});
+ // avoid overlapping value labels when the sliders are close
+ const lt=svg.querySelector('.chs[data-s="lo"] .chv'),ht=svg.querySelector('.chs[data-s="hi"] .chv');if(xh-xl<56){lt.setAttribute('text-anchor','end');lt.setAttribute('x',-3);ht.setAttribute('text-anchor','start');ht.setAttribute('x',3)}
+ const inR=x=>xf.ms?(xf.off==.75?Math.floor(x):x)>lo&&(xf.off==.75?Math.floor(x):x)<hi:x>=lo-1e-9&&x<=hi+1e-9;
+ svg.querySelectorAll('.chp').forEach(c=>c.classList.toggle('rng',!inR(+c.dataset.x)))}
+function chSnap(v){const {xf,d0,d1}=CH;v=Math.min(d1,Math.max(d0,v));return xf.ms?Math.round(v-xf.off)+xf.off:+(Math.round((v-d0)/xf.step)*xf.step+d0).toFixed(6)}
+function chMove(w,v){const {xf}=CH,g=xf.ms?1:xf.step;v=chSnap(v);if(w=='lo')CH.lo=Math.min(v,CH.hi-(xf.ms?1:0));else CH.hi=Math.max(v,CH.lo+(xf.ms?1:0));chDraw()}
+function chCommit(){chPut(CH.xf,CH.lo,CH.hi);render();fit()}
+{const svg=$('#dp');let drag=null;
+ const vx=e=>{const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return CH.d0+(q.x-CP.l)/(CP.r-CP.l)*(CH.d1-CH.d0)};
+ svg.addEventListener('pointerdown',e=>{const g=e.target.closest('.chs');if(!g||!CH.xf)return;e.preventDefault();drag={w:g.dataset.s,id:e.pointerId,lo:CH.lo,hi:CH.hi};svg.setPointerCapture(e.pointerId);svg.classList.add('drag')});
+ svg.addEventListener('pointermove',e=>{if(drag&&e.pointerId==drag.id)chMove(drag.w,vx(e))});
+ const up=e=>{if(!drag||e.pointerId!=drag.id)return;const ch=CH.lo!=drag.lo||CH.hi!=drag.hi;drag=null;svg.classList.remove('drag');if(ch)chCommit()};
+ svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+ svg.addEventListener('keydown',e=>{const g=e.target.closest('.chs');if(!g||!CH.xf||!/^Arrow(Left|Right)$/.test(e.key))return;e.preventDefault();const w=g.dataset.s,st_=CH.xf.ms?1:CH.xf.step;
+  chMove(w,(w=='lo'?CH.lo:CH.hi)+(e.key=='ArrowLeft'?-st_:st_));chCommit();setTimeout(()=>{const n=$(`#dp .chs[data-s="${w}"]`);n&&n.focus()},0)});
+ svg.addEventListener('click',e=>{const c=e.target.closest('.chp');if(c)pick(c.dataset.id,true)})}
 function mkSel(){for(const id in mk){const on=id==selId,e=mk[id].getElement();e&&e.classList.toggle('hsel',on);mk[id].setZIndexOffset(on?1000:0)}}
 function lotV(id){const m=mk[id];if(isPhone()&&lvId!=id&&m)pvSet('map');if(lvId==id){lvId=null;if(lvPrev)map.setView(lvPrev.c,lvPrev.z);lvPrev=null;pick(id,false,true);return}
  if(!m)return;if(lvId==null)lvPrev={c:map.getCenter(),z:map.getZoom()};lvId=id;pick(id,false,true);map.setView(m.getLatLng(),19)}
