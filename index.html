@@ -159,6 +159,8 @@ const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>(
 const $$=n=>'$'+Math.round(n).toLocaleString(),short=n=>'$'+(n/1e6).toFixed(2)+'M',ppsf=l=>l.price/l.sqft;
 const fdate=d=>new Date(d+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 /* DAYS LISTED: days from first price-chart date to today */
+/* INITIAL LIST PRICE: first point of this listing cycle (price chart start); falls back to listP/listD */
+const ilp=l=>{const h=l.phist;if(h&&h.length&&h[0][2])return $$(h[0][2])+' on '+fdate(h[0][0]);return l.listP?$$(l.listP)+(l.listD?' on '+fdate(l.listD):''):''};
 const dlNow=l=>{const h=l.phist;if(!h||!h.length)return '';const d=Math.max(0,Math.round((Date.now()-new Date(h[0][0]+'T12:00'))/864e5));return d+' (since '+fdate(h[0][0])+')'};
 const domNow=l=>l.dom==null?'':String(l.dom+(l.domAt&&!l.zs?Math.max(0,Math.round((Date.now()-new Date(l.domAt+'T12:00'))/864e5)):0));
 const stars=n=>'★'.repeat(n)+'☆'.repeat(5-n);
@@ -383,7 +385,7 @@ $('#pane').addEventListener('toggle',e=>{if(e.target.id=='pxh')sv('hl.pxh',e.tar
 function open_(id){const l=LS.find(x=>x.id==id),s=st(id),P=PH[id]||[];let i=0;openId=id;
  $('#pane').innerHTML=`<div class="row"><h2>${esc(l.address)}</h2><button id="x" style="margin-left:auto">Close</button></div><div class="price">${$$(l.price)}</div>
 <div class="hero" id="hero"></div>
-<div class="cols"><div><p class="zl"><a href="${l.url}" target="_blank" rel="noopener">Open on Zillow</a></p><h3>Facts</h3><dl>${[['Beds',l.beds],['Baths',l.baths],['Living area',l.sqft.toLocaleString()+' sqft'],['Price per sqft',$$(ppsf(l))],['Lot',l.lot],['Built',l.year],['Garage',l.garage],['Neighborhood',l.hood],['School district',l.isd],['HOA',l.hoa],['Taxes',l.tax],['Days on Zillow',domNow(l)],['Days listed',dlNow(l)],['Initial list price',l.listP?$$(l.listP)+(l.listD?' on '+fdate(l.listD):''):''],['Last sold',l.sold||'Not in export']].map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>${pxHtml(l)}${featHtml(l)}${l.note?`<p class="mute">${esc(l.note)}</p>`:''}
+<div class="cols"><div><p class="zl"><a href="${l.url}" target="_blank" rel="noopener">Open on Zillow</a></p><h3>Facts</h3><dl>${[['Beds',l.beds],['Baths',l.baths],['Living area',l.sqft.toLocaleString()+' sqft'],['Price per sqft',$$(ppsf(l))],['Lot',l.lot],['Built',l.year],['Garage',l.garage],['Neighborhood',l.hood],['School district',l.isd],['HOA',l.hoa],['Taxes',l.tax],['Days on Zillow',domNow(l)],['Days listed',dlNow(l)],['Initial list price',ilp(l)],['Last sold',l.sold||'Not in export']].map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>${pxHtml(l)}${featHtml(l)}${l.note?`<p class="mute">${esc(l.note)}</p>`:''}
 <h3>AI Analysis</h3><div class="an">${l.analysis}</div></div>
 <div><h3>Ratings and notes</h3><div class="who">${P2.map(p=>`<div><h4>${WHO[p]}</h4><label>Rating<select data-f="${p}.rating">${[5,4,3,2,1,0].map(n=>`<option value="${n}" ${s[p].rating==n?'selected':''}>${n?stars(n):'Unrated'}</option>`).join('')}</select></label><label>Notes<textarea data-f="${p}.notes">${esc(s[p].notes)}</textarea></label></div>`).join('')}</div>
 <h3>Shared</h3><div class="row"><label>Status <select data-f="status"><option value="">None</option>${['Interested','Toured','Offer','Pass'].map(o=>`<option ${s.status==o?'selected':''}>${o}</option>`).join('')}</select></label></div>
