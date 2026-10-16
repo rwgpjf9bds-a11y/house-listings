@@ -396,8 +396,9 @@ function open_(id){const l=LS.find(x=>x.id==id),s=st(id),P=PH[id]||[];let i=0;op
  $('#hero').onclick=e=>{const t=e.target;if(t.classList.contains('l'))heroPg(i-1);else if(t.classList.contains('r'))heroPg(i+1);else if(t.classList.contains('hva'))viewAll(id,0);else if(t.dataset.k)viewAll(id,+t.dataset.k)};$('#x').onclick=close_;
  document.querySelectorAll('#pane [data-f]').forEach(t=>{const k=t.dataset.f,sel=t.tagName=='SELECT';t[sel?'onchange':'oninput']=()=>{setF(id,k,k.endsWith('rating')?+t.value:t.value,!sel);if(sel)render()}});
  $('#f-ov').onchange=e=>{setF(id,'ov',e.target.value);place(l)};
- $('#ov').classList.add('show');$('#ov').scrollTop=0;pick(id,false)}
-const close_=()=>{$('#ov').classList.remove('show');openId=null};
+ $('#ov').classList.add('show');$('#ov').scrollTop=0;map.scrollWheelZoom.disable();pick(id,false)}
+// WHEEL FIX (Oct 16, 2026): while the details/compare window is open, the map's wheel-zoom listener made Chrome wait on every wheel tick (sticky scroll on PC); it is switched off while the window is open
+const close_=()=>{$('#ov').classList.remove('show');openId=null;if(!mLock)map.scrollWheelZoom.enable()};
 // map preview popup: slim version of the detail page
 function pvEl(l){const P=PH[l.id]||[],s=st(l.id),d=document.createElement('div');let i=0;d.className='pv';
  d.innerHTML=`<div class="pvph">${P.length?`<img alt="">`:''}${P.length>1?'<button class="hnav l" aria-label="Previous photo">‹</button><button class="hnav r" aria-label="Next photo">›</button>':''}<span class="hct"></span></div>
@@ -419,7 +420,7 @@ document.onkeydown=e=>{if(e.key=='Escape'){vaShown()?vaClose():close_();return}
  if($('#ov').classList.contains('show')&&!vaShown()&&$('#hero')&&heroFlip&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){if(e.key=='ArrowLeft')heroFlip(-1);if(e.key=='ArrowRight')heroFlip(1)}};
 function compare(){if(cmp.length<2){alert('Tick Compare on two or three listings first.');return}
  const L2=cmp.map(id=>LS.find(l=>l.id==id));const R=[['Photo',l=>`<img src="${cov(l.id)}" style="width:100%;border-radius:6px" alt="">`],['Address',l=>esc(l.address)],['Price',l=>$$(l.price)],['Beds / baths',l=>esc(l.beds)+' / '+esc(l.baths)],['Living area',l=>l.sqft.toLocaleString()+' sqft'],['Price per sqft',l=>$$(ppsf(l))],['Lot',l=>esc(l.lot)],['Built',l=>l.year],['HOA',l=>esc(l.hoa)],['Taxes',l=>esc(l.tax)],['Status',l=>st(l.id).status||'None'],...P2.map(p=>[WHO[p]+' rating',l=>st(l.id)[p].rating?stars(st(l.id)[p].rating):'Unrated']),['Features',l=>FEATS.filter(f=>l.feat?.[f[0]]===true).map(f=>esc(f[1])).join(', ')||'None recorded'],['Shared notes',l=>esc(st(l.id).notes)],...P2.map(p=>[WHO[p]+' notes',l=>esc(st(l.id)[p].notes)])];
- $('#pane').innerHTML=`<div class="row"><h2>Compare</h2><button id="x" style="margin-left:auto">Close</button></div><table class="cmp">${R.map(r=>`<tr><th>${r[0]}</th>${L2.map(l=>`<td>${r[1](l)}</td>`).join('')}</tr>`).join('')}</table>`;$('#x').onclick=close_;$('#ov').classList.add('show');$('#ov').scrollTop=0}
+ $('#pane').innerHTML=`<div class="row"><h2>Compare</h2><button id="x" style="margin-left:auto">Close</button></div><table class="cmp">${R.map(r=>`<tr><th>${r[0]}</th>${L2.map(l=>`<td>${r[1](l)}</td>`).join('')}</tr>`).join('')}</table>`;$('#x').onclick=close_;$('#ov').classList.add('show');$('#ov').scrollTop=0;map.scrollWheelZoom.disable()}
 map.on('click',unpick);
 document.addEventListener('click',e=>{const t=e.target;if(t.closest('.card,.leaflet-container,#ov,.fp,#pcard,#lmt,button,input,select,textarea,label,a,summary,details,[role=separator]'))return;unpick()});
 $('#list').onclick=e=>{const c=e.target.closest('[data-c]'),k=e.target.closest('.card');
