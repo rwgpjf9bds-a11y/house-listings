@@ -80,6 +80,8 @@ details.pxh{margin:12px 0;border:1px solid var(--line);border-radius:var(--r);ba
 /* PHONE LAYOUT (added Oct 8, 2026): only on phone-size screens (narrow portrait, or short landscape); iPads and the PC are unaffected */
 #lmt,.hbr,#pcard{display:none}
 @media (max-width:600px),(max-height:500px) and (max-width:1000px){
+/* NO INPUT ZOOM (Oct 20, 2026): iPhone Safari zooms in on any text box under 16px and doesn't zoom back out; 16px text boxes on phones only */
+input[type=search],input[type=text],input[type=number],textarea,select{font-size:16px!important}
 header{gap:6px 8px;padding:8px 12px}header h1{font-size:19px;flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #fsum{display:none}#sywrap{order:1}.hbr{display:block;order:1;flex-basis:100%;height:0}header>.fwrap:not(#sywrap){order:2}#fclr2{order:3}#cmpb{order:4}
 @media (min-width:601px){.hbr{display:none}header{flex-wrap:nowrap}header h1{flex:0 1 auto}#sywrap{margin-left:auto}}
