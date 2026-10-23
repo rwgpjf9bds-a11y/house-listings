@@ -26,7 +26,7 @@ main{flex:1;display:grid;grid-template-columns:var(--sw,400px) 7px 1fr;min-heigh
 .card img{width:100%;height:190px;object-fit:cover;display:block}
 .cb{padding:10px 12px;position:relative}.lv{margin-left:auto;margin-right:14px}.lv.on{background:var(--acc);color:#fff;border-color:var(--acc)}.cb .rt{flex-direction:column;gap:0;align-items:flex-end;line-height:1.35}.cb .price{font:700 20px system-ui,-apple-system,"Segoe UI",sans-serif}.price{font:600 22px Georgia,serif}.mute{color:var(--mute)}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .tag{font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
-.tag.SenttoKristiept2{background:#d9efe7;color:#0d5a43;border-color:#9fd3bf}.tag.TourPlanned{background:#eef4fc;color:#1c4a85;border-color:#a9c4e8;border-style:dashed}.tag.TourCompleted{background:#dce8f7;color:#1c4a85;border-color:#a9c4e8}.tag.SenttoKristiept1{background:#f6e7c4;color:#7a5600;border-color:#e0c377}.tag.SenttoKristiept3{background:#ece4f7;color:#5a3d8a;border-color:#c9b6e6}.tag.FromKristie{background:#fde6d8;color:#8a3f0f;border-color:#f0b48c}.tag.Pass{background:#eee;color:#777}.tag.zs{background:#fde2e1;color:#8a1f17;border-color:#f3b3ae}.tag.ns{background:#ececec;color:#555;border-color:#c9c9c9}
+.tag.SenttoKristiept2{background:#d9efe7;color:#0d5a43;border-color:#9fd3bf}.tag.TourFriday{background:#eef4fc;color:#1c4a85;border-color:#a9c4e8;border-style:dashed}.tag.TourSaturday{background:#f0ecfb;color:#3f3a8c;border-color:#bdb4e8;border-style:dashed}.tag.TourCompleted{background:#dce8f7;color:#1c4a85;border-color:#a9c4e8}.tag.SenttoKristiept1{background:#f6e7c4;color:#7a5600;border-color:#e0c377}.tag.SenttoKristiept3{background:#ece4f7;color:#5a3d8a;border-color:#c9b6e6}.tag.FromKristie{background:#fde6d8;color:#8a3f0f;border-color:#f0b48c}.tag.Pass{background:#eee;color:#777}.tag.zs{background:#fde2e1;color:#8a1f17;border-color:#f3b3ae}.tag.ns{background:#ececec;color:#555;border-color:#c9c9c9}
 .star{color:var(--gold);letter-spacing:1px}.star .es{color:var(--mute)}
 .pin{position:absolute;left:0;top:0;transform:translate(-50%,calc(-100% - 8px));background:#0b5059;color:#fff;font:700 13px system-ui;padding:3px 9px;border-radius:99px;border:2px solid #fff;white-space:nowrap;width:max-content;box-shadow:0 0 0 1px #000a,0 2px 6px #0008;text-shadow:0 1px 1px #0007;cursor:grab}.pin::after{content:'';position:absolute;left:50%;bottom:-9px;margin-left:-6px;border:6px solid transparent;border-top-color:#fff;border-bottom:0}.dot{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;background:#0b5059;border:3px solid #fff;box-shadow:0 0 0 1.5px #000b,0 2px 6px #0009}
 .fwrap{position:relative}.fp{position:absolute;top:calc(100% + 6px);right:0;z-index:1100;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 24px #0003;padding:12px;width:min(460px,calc(100vw - 32px));max-height:70vh;overflow:auto}.fp[hidden]{display:none}
@@ -153,10 +153,11 @@ const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){retu
 let S=ld('hl.state2',{}),G=ld('hl.geo',{}),cmp=[],selId=null,openId=null,lvId=null,lvPrev=null;
 // per-person fields live under s.rob / s.hannah; status, shared notes and the pin are shared (pros/cons are the old shared fields, folded into notes)
 const pc=s=>[s.pros&&'Pros: '+s.pros,s.cons&&'Cons: '+s.cons].filter(Boolean).join('\n');
+// TOUR DAYS (Oct 23, 2026): "Tour - Planned" renamed "Tour - Friday"; new "Tour - Saturday"
 // SENT TO KRISTIE (Oct 22, 2026): "Kristie pt 1/2" renamed "Sent to Kristie pt 1/2"; new "Sent to Kristie pt 3" and "From Kristie"
 // KRISTIE STATUS (Oct 21, 2026): "Offer" renamed "Kristie pt 1", "Interested" renamed "Kristie pt 2" (old values in the store are converted by clean())
 // TOUR STATUS (Oct 20, 2026): "Toured" replaced by "Tour - Planned" and "Tour - Completed"; tgc() makes a CSS class from a status (no spaces)
-const STS=['Sent to Kristie pt 1','Sent to Kristie pt 2','Sent to Kristie pt 3','From Kristie','Tour - Planned','Tour - Completed','Pass'],tgc=v=>String(v).replace(/\W+/g,'');
+const STS=['Sent to Kristie pt 1','Sent to Kristie pt 2','Sent to Kristie pt 3','From Kristie','Tour - Friday','Tour - Saturday','Tour - Completed','Pass'],tgc=v=>String(v).replace(/\W+/g,'');
 const P2=['rob','hannah'],WHO={rob:'Rob',hannah:'Hannah'};
 const st=id=>{const s=S[id]||(S[id]={status:'',pros:'',cons:'',ov:''});P2.forEach(p=>s[p]||(s[p]={rating:0,notes:''}));if(s.notes==null)s.notes=pc(s);return s};
 const avg=s=>{const r=P2.map(p=>s[p].rating).filter(Boolean);return r.length?r.reduce((a,b)=>a+b)/r.length:0};
@@ -457,7 +458,7 @@ const pURL=()=>'https://getpantry.cloud/apiv1/pantry/'+encodeURIComponent(PID)+'
 const getP=(o,k)=>k.split('.').reduce((a,b)=>a==null?a:a[b],o);
 const setP=(o,k,v)=>{const ks=k.split('.'),last=ks.pop();ks.reduce((a,b)=>a[b]??(a[b]={}),o)[last]=v};
 // values from the store are untrusted: coerce to the expected type
-const clean=(k,v)=>k.endsWith('rating')?Math.max(0,Math.min(5,Math.round(+v)||0)):k=='status'?(v=='Toured'?'Tour - Completed':v=='Offer'||v=='Kristie pt 1'?'Sent to Kristie pt 1':v=='Interested'||v=='Kristie pt 2'?'Sent to Kristie pt 2':STS.includes(v)?v:''):String(v??'').slice(0,20000);
+const clean=(k,v)=>k.endsWith('rating')?Math.max(0,Math.min(5,Math.round(+v)||0)):k=='status'?(v=='Toured'?'Tour - Completed':v=='Tour - Planned'?'Tour - Friday':v=='Offer'||v=='Kristie pt 1'?'Sent to Kristie pt 1':v=='Interested'||v=='Kristie pt 2'?'Sent to Kristie pt 2':STS.includes(v)?v:''):String(v??'').slice(0,20000);
 const errMsg=(e,t)=>{const m=String(t||e&&e.message||e);return /failed to fetch|network/i.test(m)?'Could not reach the notes service (offline?)':/pantry with id/i.test(m)?'That Pantry ID was not found':m.slice(0,160)};
 function setF(id,k,v,typing){setP(st(id),k,v);sv('hl.state2',S);PEND[id+'|'+k]=v;sv('hl.pending',PEND);clearTimeout(pushT);pushT=setTimeout(push,typing?2000:200);syncUI()}
 // only ever create the basket when the service says it is missing and this computer has never read it (POST replaces the whole basket)
