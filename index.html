@@ -113,7 +113,8 @@ table.cmp{display:block;overflow-x:auto}.cmp th{width:auto;min-width:84px}.cmp t
 .pinctl{display:block;background:var(--card);color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:3px 7px;font:500 11px system-ui;box-shadow:0 1px 3px #0003;cursor:pointer;white-space:nowrap;opacity:.9}
 .pinctl.on{color:var(--ink);border-color:#c99700;background:#fff4c2;opacity:1}#map.plock .pin,#map.plock .dot{cursor:pointer}
 .bx{font-size:13px;line-height:1.35}
-/* BUILD TYPE / BUILDER: .bx rows under the address on cards and map pop-ups */
+/* BUILD TYPE / BUILDER: .bx line under the address on cards and map pop-ups (only when set); .shf = aligned Status / New/Existing / Builder on the details page */
+.shf{display:grid;grid-template-columns:max-content minmax(0,max-content);align-items:center;gap:12px 14px;margin:6px 0 4px}.shf label{margin:0}.shf select{min-width:200px;max-width:100%}
 </style></head><body>
 <header><h1>House listings</h1><span id="fsum" class="mute"></span><button id="fclr2" hidden title="Clear all filters and reset the map">Clear filters ✕</button>
 <div class="fwrap"><button id="fb" aria-expanded="false" aria-controls="fp">Filters<span id="fn"></span> ▾</button>
@@ -127,7 +128,7 @@ table.cmp{display:block;overflow-x:auto}.cmp th{width:auto;min-width:84px}.cmp t
 <div class="fl">State <div class="ms" id="fst" data-flt></div></div>
 <div class="fl" style="grid-column:1">Zillow <div class="ms" id="fz" data-flt></div></div>
 <div class="fl">Status <div class="ms" id="fs" data-flt></div></div>
-<div class="fl" style="grid-column:1">Build type <div class="ms" id="fbt" data-flt></div></div>
+<div class="fl" style="grid-column:1">New/Existing <div class="ms" id="fbt" data-flt></div></div>
 <div class="fl">Builder <div class="ms" id="fbl" data-flt></div></div>
 </div><label class="nsck"><input type="checkbox" id="fns" data-flt> Show no longer saved<span class="cnt"></span></label><div class="fgrid" style="margin-top:10px">
 <label class="wide">Price range <span class="prng"><input data-flt data-num="price" data-op="min" type="number" step="25000" placeholder="Min" aria-label="Min price"><span>–</span><input id="mp" data-flt data-num="price" data-op="max" type="number" step="25000" placeholder="Max" aria-label="Max price"></span></label>
@@ -167,9 +168,10 @@ const pc=s=>[s.pros&&'Pros: '+s.pros,s.cons&&'Cons: '+s.cons].filter(Boolean).jo
 // KRISTIE STATUS (Oct 21, 2026): "Offer" renamed "Kristie pt 1", "Interested" renamed "Kristie pt 2" (old values in the store are converted by clean())
 // TOUR STATUS (Oct 20, 2026): "Toured" replaced by "Tour - Planned" and "Tour - Completed"; tgc() makes a CSS class from a status (no spaces)
 const STS=['Tour 2 - Yes','Tour 2 - Maybe','Tour 2 - No','Sent to Kristie pt 1','Sent to Kristie pt 2','Sent to Kristie pt 3','From Kristie','Tour 1, Friday','Tour 1, Saturday','Pass'],tgc=v=>String(v).replace(/\W+/g,'');
+// BUILD TYPE / BUILDER, v2 (Nov 5, 2026): shown as "New/Existing"; cards/pop-ups get ONE line, only when New/Existing or Builder is set (Builder shows "None" when only New/Existing is set); details fields in an aligned grid (.shf)
 // BUILD TYPE / BUILDER (Nov 5, 2026): two shared fields bt / bld ('' = None), edited under Status on the details page, filters fbt/fbl, two rows under the address on cards and map pop-ups (bxHtml)
 const BT=['New Construction','Existing'],BLD=['Highland','Coventry','Tradition','Other'];
-const bxHtml=s=>`<div class="bx"><span class="mute">Build type:</span> ${s.bt?esc(s.bt):'<span class="mute">None</span>'}</div><div class="bx"><span class="mute">Builder:</span> ${s.bld?esc(s.bld):'<span class="mute">None</span>'}</div>`;
+const bxHtml=s=>{const a=[];if(s.bt)a.push(`<span class="mute">New/Existing:</span> ${esc(s.bt)}`);if(s.bt||s.bld)a.push(`<span class="mute">Builder:</span> ${s.bld?esc(s.bld):'None'}`);return a.length?`<div class="bx">${a.join(' &nbsp;·&nbsp; ')}</div>`:''};
 const P2=['rob','hannah'],WHO={rob:'Rob',hannah:'Hannah'};
 const st=id=>{const s=S[id]||(S[id]={status:'',pros:'',cons:'',ov:''});P2.forEach(p=>s[p]||(s[p]={rating:0,notes:''}));if(s.notes==null)s.notes=pc(s);return s};
 const avg=s=>{const r=P2.map(p=>s[p].rating).filter(Boolean);return r.length?r.reduce((a,b)=>a+b)/r.length:0};
@@ -283,7 +285,7 @@ function render(){const all=rows(),bb=inV()&&map.getBounds(),a=bb?all.filter(l=>
  const n=[...document.querySelectorAll('[data-flt]')].filter(e=>e.classList.contains('ms')?msV(e.id).length:e.type=='checkbox'?e.checked:e.value).length;$('#fn').textContent=n||'';$('#fclr2').hidden=!n;$('#fres').textContent=all.length+' of '+LS.length+' listings';fsum();facets()}
 // text summary of applied filters, shown left of the Filters button
 function fsum(){const t=[],q=$('#fq').value.trim();if(q)t.push('"'+q+'"');
- [['fr','Avg rating'],['frr','Rob'],['frh','Hannah'],['fc','City'],['fst','State'],['fs','Status'],['fz','Zillow'],['fbt','Build type'],['fbl','Builder']].forEach(([s,n])=>{const v=msT(s);if(v)t.push(n+': '+v)});
+ [['fr','Avg rating'],['frr','Rob'],['frh','Hannah'],['fc','City'],['fst','State'],['fs','Status'],['fz','Zillow'],['fbt','New/Existing'],['fbl','Builder']].forEach(([s,n])=>{const v=msT(s);if(v)t.push(n+': '+v)});
  const pm=$('[data-num="price"][data-op="min"]').value,px=$('#mp').value;if(pm||px)t.push(pm&&px?$$(+pm)+'–'+$$(+px):pm?'From '+$$(+pm):'Up to '+$$(+px));
  [['sqft','Sqft',v=>(+v).toLocaleString()],['ppsf','$/sqft',v=>'$'+v],['lotAc','Lot',v=>v+' ac'],['year','Built',v=>v],['beds','Beds',v=>v],['baths','Baths',v=>v]].forEach(([k,n,f])=>{const a=$(`[data-num="${k}"][data-op="min"]`)?.value,b=$(`[data-num="${k}"][data-op="max"]`)?.value;if(a||b)t.push(n+' '+(a&&b?f(a)+'–'+f(b):a?f(a)+'+':'up to '+f(b)))});
  document.querySelectorAll('[data-feat]:checked').forEach(e=>t.push(e.parentNode.textContent.trim()));if($('#fns').checked)t.push('Incl. no longer saved');
@@ -408,9 +410,9 @@ function open_(id){const l=LS.find(x=>x.id==id),s=st(id),P=PH[id]||[];let i=0;op
 <div class="cols"><div><p class="zl"><a href="${l.url}" target="_blank" rel="noopener">Open on Zillow</a></p><h3>Facts</h3><dl>${[['Beds',l.beds],['Baths',l.baths],['Living area',l.sqft.toLocaleString()+' sqft'],['Price per sqft',$$(ppsf(l))],['Lot',l.lot],['Built',l.year],['Garage',l.garage],['Neighborhood',l.hood],['School district',l.isd],['HOA',l.hoa],['Taxes',l.tax],['Days on Zillow',domNow(l)],['Days listed',dlNow(l)],['Initial list price',ilp(l)],['Last sold',l.sold||'Not in export']].map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>${pxHtml(l)}${featHtml(l)}${l.note?`<p class="mute">${esc(l.note)}</p>`:''}
 <h3>AI Analysis</h3><div class="an">${l.analysis}</div></div>
 <div><h3>Ratings and notes</h3><div class="who">${P2.map(p=>`<div><h4>${WHO[p]}</h4><label>Rating<select data-f="${p}.rating">${[5,4,3,2,1,0].map(n=>`<option value="${n}" ${s[p].rating==n?'selected':''}>${n?stars(n):'Unrated'}</option>`).join('')}</select></label><label>Notes<textarea data-f="${p}.notes">${esc(s[p].notes)}</textarea></label></div>`).join('')}</div>
-<h3>Shared</h3><div class="row"><label>Status <select data-f="status"><option value="">None</option>${STS.map(o=>`<option ${s.status==o?'selected':''}>${o}</option>`).join('')}</select></label></div>
-<div class="row"><label>Build type <select data-f="bt"><option value="">None</option>${BT.map(o=>`<option ${s.bt==o?'selected':''}>${o}</option>`).join('')}</select></label></div>
-<div class="row"><label>Builder <select data-f="bld"><option value="">None</option>${BLD.map(o=>`<option ${s.bld==o?'selected':''}>${o}</option>`).join('')}</select></label></div>
+<h3>Shared</h3><div class="shf"><label for="f-st">Status</label><select id="f-st" data-f="status"><option value="">None</option>${STS.map(o=>`<option ${s.status==o?'selected':''}>${o}</option>`).join('')}</select>
+<label for="f-bt">New/Existing</label><select id="f-bt" data-f="bt"><option value="">None</option>${BT.map(o=>`<option ${s.bt==o?'selected':''}>${o}</option>`).join('')}</select>
+<label for="f-bld">Builder</label><select id="f-bld" data-f="bld"><option value="">None</option>${BLD.map(o=>`<option ${s.bld==o?'selected':''}>${o}</option>`).join('')}</select></div>
 <p><label>Notes<textarea data-f="notes" style="min-height:110px">${esc(s.notes)}</textarea></label></p>
 <p><label>Pin override (lat, long)<input type="text" id="f-ov" value="${esc(s.ov)}" placeholder="33.3424, -96.7652" style="width:100%"></label></p></div></div>`;
  const pg=1+Math.max(0,Math.ceil((P.length-5)/4)),heroPg=k=>{i=(k+pg)%pg;const a=i?5+(i-1)*4:0,c=i?4:5,h=$('#hero');h.classList.toggle('g4',i>0);h.innerHTML=[...Array(c).keys()].map(j=>{const n=a+j;return n<P.length?`<img src="${P[n]}" data-k="${n}" alt="Photo ${n+1} of ${P.length}">`:'<div class="hb"></div>'}).join('')+
