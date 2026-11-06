@@ -1,5 +1,5 @@
 // Bump VERSION whenever index.html or the data changes so phones pick up the update.
-const VERSION = 'pid-2026-27-v1';
+const VERSION = 'pid-2026-27-v2';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
